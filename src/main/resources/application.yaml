@@ -1,0 +1,23 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: itemstorage
+  datasource:
+    password: pd
+    url: jdbc:postgresql://localhost:5432/itemstorage
+    username: pd
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    open-in-view: false
+
+jooq:
+  generator:
+    database:
+      name: org.jooq.meta.postgres.PostgresDatabase
+      with-input-schema: itemstorage
+      with-includes: .*
+    target:
+      package-name: com.jiubredeemer.itemstorage.dal.entity
+      directory: ./src/main/java
