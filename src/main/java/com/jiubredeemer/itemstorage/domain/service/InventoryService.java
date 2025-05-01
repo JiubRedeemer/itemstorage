@@ -15,22 +15,41 @@ public class InventoryService {
         this.inventoryRepository = inventoryRepository;
     }
 
-    public InventoryDto getInventoryByRoomIdAndCharacterId(UUID characterId) {
-        return inventoryRepository.findInventoryByCharacterIdFull(characterId)
+    public InventoryDto getInventoryByRoomIdAndCharacterId(UUID roomId, UUID characterId) {
+        return inventoryRepository.findInventoryByCharacterIdFull(roomId, characterId)
                 .orElseThrow();
     }
 
-    public InventoryDto equipItemByCharacterIdAndItemId(UUID characterId, UUID itemId) {
-        final InventoryItemDto inventoryItemDto = inventoryRepository.findInventoryItemById(itemId)
+    public InventoryDto equipItemByCharacterIdAndItemId(UUID roomId, UUID characterId, UUID itemId) {
+        final InventoryDto inventoryDto = inventoryRepository.findInventoryByCharacterIdFull(roomId, characterId)
                 .orElseThrow();
+        final InventoryItemDto inventoryItemDto = inventoryDto.getItems().stream().filter(item -> item.getItemId().equals(itemId)).findAny().orElseThrow();
         inventoryRepository.changeInUseStatus(itemId, !inventoryItemDto.getInUse());
-        return inventoryRepository.findInventoryByCharacterIdFull(characterId)
+        return inventoryRepository.findInventoryByCharacterIdFull(roomId, characterId)
                 .orElseThrow();
     }
 
-    public InventoryDto changeItemCount(UUID characterId, UUID itemId, Long count) {
-        inventoryRepository.changeCount(itemId, count);
-        return inventoryRepository.findInventoryByCharacterIdFull(characterId)
+    public InventoryDto changeItemCount(UUID roomId, UUID characterId, UUID itemId, Long count) {
+        final InventoryDto inventoryDto = inventoryRepository.findInventoryByCharacterIdFull(roomId, characterId)
                 .orElseThrow();
+        inventoryDto.getItems().stream().filter(item -> item.getItemId().equals(itemId)).findAny().orElseThrow();
+        inventoryRepository.changeItemCount(itemId, count);
+        return inventoryRepository.findInventoryByCharacterIdFull(roomId, characterId)
+                .orElseThrow();
+    }
+
+    public InventoryDto deleteItemFromInventory(UUID roomId, UUID characterId, UUID itemId) {
+        final InventoryDto inventoryDto = inventoryRepository.findInventoryByCharacterIdFull(roomId, characterId)
+                .orElseThrow();
+        inventoryDto.getItems().stream().filter(item -> item.getId().equals(itemId)).findAny().orElseThrow();
+        inventoryRepository.deleteItemFromInventory(itemId);
+        return inventoryRepository.findInventoryByCharacterIdFull(roomId, characterId)
+                .orElseThrow();
+    }
+
+    public InventoryItemDto getItemByCharacterIdAndItemId(UUID roomId, UUID characterId, UUID itemId) {
+        final InventoryDto inventoryDto = inventoryRepository.findInventoryByCharacterIdFull(roomId, characterId)
+                .orElseThrow();
+        return inventoryDto.getItems().stream().filter(item -> item.getId().equals(itemId)).findAny().orElseThrow();
     }
 }

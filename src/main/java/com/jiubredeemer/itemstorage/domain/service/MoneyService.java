@@ -15,14 +15,14 @@ public class MoneyService {
     private final InventoryRepository inventoryRepository;
     private final MoneyRepository moneyRepository;
 
-    public MoneyDto findByCharacterId(UUID characterId) {
-        final InventoryDto inventoryByCharacterIdFull = inventoryRepository.findInventoryByCharacterIdFull(characterId).orElseThrow();
+    public MoneyDto findByCharacterId(UUID roomId, UUID characterId) {
+        final InventoryDto inventoryByCharacterIdFull = inventoryRepository.findInventoryByCharacterIdFull(roomId, characterId).orElseThrow();
         return moneyRepository.findByInventoryId(inventoryByCharacterIdFull.getId())
                 .orElseGet(() -> moneyRepository.create(inventoryByCharacterIdFull.getId(), new MoneyDto()).orElseThrow());
     }
 
-    public MoneyDto changeMoneyCount(UUID characterId, MoneyDto moneyDto) {
-        final InventoryDto inventoryByCharacterIdFull = inventoryRepository.findInventoryByCharacterIdFull(characterId).orElseThrow();
+    public MoneyDto changeMoneyCount(UUID roomId, UUID characterId, MoneyDto moneyDto) {
+        final InventoryDto inventoryByCharacterIdFull = inventoryRepository.findInventoryByCharacterIdFull(roomId, characterId).orElseThrow();
         return moneyRepository.changeCount(inventoryByCharacterIdFull.getId(), moneyDto)
                 .orElseGet(() -> moneyRepository.create(inventoryByCharacterIdFull.getId(), moneyDto).orElseThrow());
     }

@@ -37,9 +37,9 @@ public class InventoryRepository {
                 .map(this::mapInventoryRecordIntoFullDto);
     }
 
-    public Optional<InventoryDto> findInventoryByCharacterIdFull(UUID characterId) {
+    public Optional<InventoryDto> findInventoryByCharacterIdFull(UUID roomId, UUID characterId) {
         return dsl.selectFrom(INVENTORY)
-                .where(INVENTORY.CHARACTER_ID.eq(characterId))
+                .where(INVENTORY.CHARACTER_ID.eq(characterId)).and(INVENTORY.ROOM_ID.eq(roomId))
                 .fetchOptional()
                 .map(this::mapInventoryRecordIntoFullDto);
     }
@@ -77,7 +77,11 @@ public class InventoryRepository {
         return findInventoryItemById(itemId);
     }
 
-    public Optional<InventoryItemDto> changeCount(UUID itemId, Long count) {
+    public void deleteItemFromInventory(UUID itemId) {
+        dsl.delete(INVENTORY_ITEM).where(INVENTORY_ITEM.ID.eq(itemId)).execute();
+    }
+
+    public Optional<InventoryItemDto> changeItemCount(UUID itemId, Long count) {
         dsl.update(INVENTORY_ITEM).set(INVENTORY_ITEM.COUNT, count)
                 .where(INVENTORY_ITEM.ID.eq(itemId))
                 .execute();
@@ -92,5 +96,11 @@ public class InventoryRepository {
                         item.getItem().getStats().getWeight() * item.getCount() : 0L)
                 .sum());
         return inventoryDto;
+    }
+
+    public Boolean isExistsInventoryByCharacterId(UUID roomId, UUID characterId) {
+        return dsl.selectFrom(INVENTORY)
+                .where(INVENTORY.CHARACTER_ID.eq(characterId)).and(INVENTORY.ROOM_ID.eq(roomId))
+                .fetchOptional().isPresent();
     }
 }
