@@ -52,4 +52,15 @@ public class InventoryService {
                 .orElseThrow();
         return inventoryDto.getItems().stream().filter(item -> item.getId().equals(itemId)).findAny().orElseThrow();
     }
+
+    public InventoryDto addItemToInventory(UUID roomId, UUID characterId, UUID itemId, Long count) {
+        final InventoryDto inventoryDto = inventoryRepository.findInventoryByCharacterIdFull(roomId, characterId)
+                .orElseThrow();
+        inventoryDto.getItems().stream().filter(item -> item.getId().equals(itemId)).findAny().ifPresent(item -> {
+            throw new IllegalStateException("Item already exists in inventory");
+        });
+        inventoryRepository.addItemToInventory(inventoryDto.getId(), itemId, count);
+        return inventoryRepository.findInventoryByCharacterIdFull(roomId, characterId)
+                .orElseThrow();
+    }
 }

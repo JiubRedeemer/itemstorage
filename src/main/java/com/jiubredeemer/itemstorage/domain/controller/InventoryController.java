@@ -39,4 +39,9 @@ public class InventoryController {
     public InventoryDto deleteItemFromInventory(@PathVariable UUID roomId, @PathVariable UUID characterId, @PathVariable UUID itemId) {
         return inventoryService.deleteItemFromInventory(roomId, characterId, itemId);
     }
+
+    @PutMapping("/{itemId}/{count}")
+    public InventoryDto deleteItemFromInventory(@PathVariable UUID roomId, @PathVariable UUID characterId, @PathVariable UUID itemId, @PathVariable Long count) {
+        return inventoryService.addItemToInventory(roomId, characterId, itemId, count);
+    }
 }

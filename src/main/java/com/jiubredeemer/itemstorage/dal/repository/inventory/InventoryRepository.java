@@ -103,4 +103,10 @@ public class InventoryRepository {
                 .where(INVENTORY.CHARACTER_ID.eq(characterId)).and(INVENTORY.ROOM_ID.eq(roomId))
                 .fetchOptional().isPresent();
     }
+
+    public void addItemToInventory(UUID inventoryId, UUID itemId, Long count) {
+        dsl.insertInto(INVENTORY_ITEM, INVENTORY_ITEM.ID, INVENTORY_ITEM.INVENTORY_ID, INVENTORY_ITEM.ITEM_ID, INVENTORY_ITEM.COUNT, INVENTORY_ITEM.IN_USE)
+                .values(UUID.randomUUID(), inventoryId, itemId, count, false)
+                .execute();
+    }
 }
