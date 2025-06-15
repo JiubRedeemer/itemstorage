@@ -121,6 +121,11 @@ public class Items extends TableImpl<ItemsRecord> {
      */
     public final TableField<ItemsRecord, String> IMG_URL = createField(DSL.name("img_url"), SQLDataType.CLOB, this, "");
 
+    /**
+     * The column <code>itemstorage.items.visible_for_players</code>.
+     */
+    public final TableField<ItemsRecord, Boolean> VISIBLE_FOR_PLAYERS = createField(DSL.name("visible_for_players"), SQLDataType.BOOLEAN.defaultValue(DSL.field(DSL.raw("true"), SQLDataType.BOOLEAN)), this, "");
+
     private Items(Name alias, Table<ItemsRecord> aliased) {
         this(alias, aliased, (Field<?>[]) null, null);
     }

@@ -190,6 +190,20 @@ public class ItemsRecord extends UpdatableRecordImpl<ItemsRecord> {
         return (String) get(11);
     }
 
+    /**
+     * Setter for <code>itemstorage.items.visible_for_players</code>.
+     */
+    public void setVisibleForPlayers(Boolean value) {
+        set(12, value);
+    }
+
+    /**
+     * Getter for <code>itemstorage.items.visible_for_players</code>.
+     */
+    public Boolean getVisibleForPlayers() {
+        return (Boolean) get(12);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -213,7 +227,7 @@ public class ItemsRecord extends UpdatableRecordImpl<ItemsRecord> {
     /**
      * Create a detached, initialised ItemsRecord
      */
-    public ItemsRecord(UUID id, JSONB name, String type, String subtype, Boolean customization, String rarity, String description, JSONB stats, LocalDateTime createdAt, UUID roomId, UUID creatorId, String imgUrl) {
+    public ItemsRecord(UUID id, JSONB name, String type, String subtype, Boolean customization, String rarity, String description, JSONB stats, LocalDateTime createdAt, UUID roomId, UUID creatorId, String imgUrl, Boolean visibleForPlayers) {
         super(Items.ITEMS);
 
         setId(id);
@@ -228,6 +242,7 @@ public class ItemsRecord extends UpdatableRecordImpl<ItemsRecord> {
         setRoomId(roomId);
         setCreatorId(creatorId);
         setImgUrl(imgUrl);
+        setVisibleForPlayers(visibleForPlayers);
         resetChangedOnNotNull();
     }
 }

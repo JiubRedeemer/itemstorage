@@ -17,7 +17,15 @@ public class InventoryService {
 
     public InventoryDto getInventoryByRoomIdAndCharacterId(UUID roomId, UUID characterId) {
         return inventoryRepository.findInventoryByCharacterIdFull(roomId, characterId)
-                .orElseThrow();
+                .orElseGet(() -> {
+                    final InventoryDto inventoryDto = new InventoryDto();
+                    inventoryDto.setId(UUID.randomUUID());
+                    inventoryDto.setCharacterId(characterId);
+                    inventoryDto.setRoomId(roomId);
+                    inventoryDto.setTotalWeight(0L);
+                    inventoryRepository.create(inventoryDto);
+                    return inventoryDto;
+                });
     }
 
     public InventoryDto equipItemByCharacterIdAndItemId(UUID roomId, UUID characterId, UUID itemId) {
@@ -32,7 +40,7 @@ public class InventoryService {
     public InventoryDto changeItemCount(UUID roomId, UUID characterId, UUID itemId, Long count) {
         final InventoryDto inventoryDto = inventoryRepository.findInventoryByCharacterIdFull(roomId, characterId)
                 .orElseThrow();
-        inventoryDto.getItems().stream().filter(item -> item.getItemId().equals(itemId)).findAny().orElseThrow();
+        inventoryDto.getItems().stream().filter(item -> item.getId().equals(itemId)).findAny().orElseThrow();
         inventoryRepository.changeItemCount(itemId, count);
         return inventoryRepository.findInventoryByCharacterIdFull(roomId, characterId)
                 .orElseThrow();

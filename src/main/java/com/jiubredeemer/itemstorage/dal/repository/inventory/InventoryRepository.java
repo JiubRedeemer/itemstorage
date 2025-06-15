@@ -23,6 +23,16 @@ public class InventoryRepository {
     private final DSLContext dsl;
     private final ItemRepository itemRepository;
 
+    public InventoryDto create(InventoryDto inventoryDto) {
+        dsl.insertInto(INVENTORY)
+                .set(INVENTORY.ID, inventoryDto.getId())
+                .set(INVENTORY.CHARACTER_ID, inventoryDto.getCharacterId())
+                .set(INVENTORY.ROOM_ID, inventoryDto.getRoomId())
+                .set(INVENTORY.TOTAL_WEIGHT, inventoryDto.getTotalWeight())
+                .execute();
+        return inventoryDto;
+    }
+
     public Optional<InventoryDto> findInventoryById(UUID id) {
         return dsl.selectFrom(INVENTORY)
                 .where(INVENTORY.ID.eq(id))

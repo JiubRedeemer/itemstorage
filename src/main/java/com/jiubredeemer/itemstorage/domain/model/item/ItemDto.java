@@ -27,4 +27,5 @@ public class ItemDto {
     private UUID roomId;
     private UUID creatorId;
     private String imgUrl;
+    private String visibleForPlayers;
 }
