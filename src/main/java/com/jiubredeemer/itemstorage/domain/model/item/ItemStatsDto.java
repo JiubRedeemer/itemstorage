@@ -1,24 +1,25 @@
 package com.jiubredeemer.itemstorage.domain.model.item;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.jiubredeemer.itemstorage.domain.model.common.DamageObject;
-import com.jiubredeemer.itemstorage.domain.model.common.PriceObject;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.util.UUID;
 
 @Data
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@AllArgsConstructor
-@NoArgsConstructor
 public class ItemStatsDto {
-    private List<PriceObject> defaultPrice;
-    private Long weight;
-    private DamageObject damage;
-    private String armorClass;
-    private String armorClassMaxDexterityBonus;
-    private String requirement;
-    private List<String> tags;
+    private UUID id;
+    private UUID itemId;
+    private StatsDto armoryClass;
+    private StatsDto speed;
+    private StatsDto hp;
+    private StatsDto savingThrow;
+    private StatsDto adventage;
+    private StatsDto interference;
+    private StatsDto resistance;
+    private StatsDto vulnerability;
+    private StatsDto immunity;
+    private StatsDto ability_score;
+    private StatsDto proficiency_skill;
+    private StatsDto attack_bonus;
+    private StatsDto damage_bonus;
+    private StatsDto limitation;
 }

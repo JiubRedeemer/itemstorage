@@ -17,4 +17,5 @@ public class InventoryItemDto {
     private ItemDto item;
     private Long count;
     private Boolean inUse;
+    private Boolean requirementsOk;
 }

@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/items")
+@RequestMapping("/api/items/{roomId}/{userId}")
 @RequiredArgsConstructor
 public class ItemController {
 
@@ -21,13 +21,20 @@ public class ItemController {
         return itemService.fetchAllItems();
     }
 
-    @PostMapping("{roomId}/search")
+    @PostMapping("/search")
     public List<ItemDto> searchByNameRoomAndCommunityItems(@PathVariable UUID roomId,
+                                                           @PathVariable UUID userId,
                                                            @RequestBody SearchItemParams searchItemParams) {
         return itemService.searchByNameRoomAndCommunityItems(searchItemParams.getSearchQuery(),
                 roomId,
+                userId,
                 searchItemParams.getLastSeenCreatedAt(),
                 searchItemParams.getLastSeenId(),
                 searchItemParams.getLimit());
+    }
+
+    @PutMapping()
+    public ItemDto addItem(@RequestBody ItemDto itemDto, @PathVariable UUID roomId, @PathVariable UUID userId) {
+        return itemService.addItem(roomId, userId, itemDto);
     }
 }

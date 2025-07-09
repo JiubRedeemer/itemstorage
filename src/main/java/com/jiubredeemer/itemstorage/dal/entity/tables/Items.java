@@ -8,6 +8,7 @@ import com.jiubredeemer.itemstorage.dal.entity.Indexes;
 import com.jiubredeemer.itemstorage.dal.entity.Itemstorage;
 import com.jiubredeemer.itemstorage.dal.entity.Keys;
 import com.jiubredeemer.itemstorage.dal.entity.tables.InventoryItem.InventoryItemPath;
+import com.jiubredeemer.itemstorage.dal.entity.tables.ItemStats.ItemStatsPath;
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.ItemsRecord;
 
 import java.time.LocalDateTime;
@@ -126,6 +127,11 @@ public class Items extends TableImpl<ItemsRecord> {
      */
     public final TableField<ItemsRecord, Boolean> VISIBLE_FOR_PLAYERS = createField(DSL.name("visible_for_players"), SQLDataType.BOOLEAN.defaultValue(DSL.field(DSL.raw("true"), SQLDataType.BOOLEAN)), this, "");
 
+    /**
+     * The column <code>itemstorage.items.creator</code>.
+     */
+    public final TableField<ItemsRecord, String> CREATOR = createField(DSL.name("creator"), SQLDataType.CLOB, this, "");
+
     private Items(Name alias, Table<ItemsRecord> aliased) {
         this(alias, aliased, (Field<?>[]) null, null);
     }
@@ -214,6 +220,19 @@ public class Items extends TableImpl<ItemsRecord> {
             _inventoryItem = new InventoryItemPath(this, null, Keys.INVENTORY_ITEM__FKINVENTORY_686023.getInverseKey());
 
         return _inventoryItem;
+    }
+
+    private transient ItemStatsPath _itemStats;
+
+    /**
+     * Get the implicit to-many join path to the
+     * <code>itemstorage.item_stats</code> table
+     */
+    public ItemStatsPath itemStats() {
+        if (_itemStats == null)
+            _itemStats = new ItemStatsPath(this, null, Keys.ITEM_STATS__ITEM_STATS_ITEMS_FK.getInverseKey());
+
+        return _itemStats;
     }
 
     @Override

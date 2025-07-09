@@ -6,6 +6,7 @@ package com.jiubredeemer.itemstorage.dal.entity;
 
 import com.jiubredeemer.itemstorage.dal.entity.tables.Inventory;
 import com.jiubredeemer.itemstorage.dal.entity.tables.InventoryItem;
+import com.jiubredeemer.itemstorage.dal.entity.tables.ItemStats;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Items;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Money;
 
@@ -25,6 +26,11 @@ public class Tables {
      * The table <code>itemstorage.inventory_item</code>.
      */
     public static final InventoryItem INVENTORY_ITEM = InventoryItem.INVENTORY_ITEM;
+
+    /**
+     * The table <code>itemstorage.item_stats</code>.
+     */
+    public static final ItemStats ITEM_STATS = ItemStats.ITEM_STATS;
 
     /**
      * The table <code>itemstorage.items</code>.

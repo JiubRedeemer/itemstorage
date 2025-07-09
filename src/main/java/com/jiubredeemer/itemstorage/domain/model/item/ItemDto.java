@@ -22,10 +22,11 @@ public class ItemDto {
     private Boolean customization;
     private RarityEnum rarity;
     private String description;
-    private ItemStatsDto stats;
+    private ItemOptionsDto stats;
     private Timestamp createdAt;
     private UUID roomId;
     private UUID creatorId;
     private String imgUrl;
-    private String visibleForPlayers;
+    private Boolean visibleForPlayers;
+    private String creator;
 }

@@ -4,6 +4,7 @@ import com.jiubredeemer.itemstorage.dal.entity.tables.records.InventoryRecord;
 import com.jiubredeemer.itemstorage.domain.model.inventory.InventoryDto;
 import com.jiubredeemer.itemstorage.domain.model.inventory.InventoryItemDto;
 import com.jiubredeemer.itemstorage.domain.model.item.ItemDto;
+import com.jiubredeemer.itemstorage.domain.model.item.ItemStatsDto;
 import lombok.RequiredArgsConstructor;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Repository;
@@ -14,8 +15,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static com.jiubredeemer.itemstorage.dal.entity.Tables.INVENTORY;
-import static com.jiubredeemer.itemstorage.dal.entity.Tables.INVENTORY_ITEM;
+import static com.jiubredeemer.itemstorage.dal.entity.Tables.*;
 
 @Repository
 @RequiredArgsConstructor
@@ -118,5 +118,23 @@ public class InventoryRepository {
         dsl.insertInto(INVENTORY_ITEM, INVENTORY_ITEM.ID, INVENTORY_ITEM.INVENTORY_ID, INVENTORY_ITEM.ITEM_ID, INVENTORY_ITEM.COUNT, INVENTORY_ITEM.IN_USE)
                 .values(UUID.randomUUID(), inventoryId, itemId, count, false)
                 .execute();
+    }
+
+    public List<ItemStatsDto> getEquippedItemStats(UUID roomId, UUID characterId) {
+        Optional<InventoryDto> inventoryByCharacterIdFull = this.findInventoryByCharacterIdFull(roomId, characterId);
+        if (inventoryByCharacterIdFull.isPresent()) {
+            final List<InventoryItemDto> equippedItems = dsl.selectFrom(INVENTORY_ITEM)
+                    .where(INVENTORY_ITEM.INVENTORY_ID.eq(inventoryByCharacterIdFull.get().getId()))
+                    .and(INVENTORY_ITEM.IN_USE.eq(true))
+                    .fetch()
+                    .map(inventoryItemRecord -> inventoryItemRecord.into(InventoryItemDto.class));
+            final List<UUID> equippedItemsIds = equippedItems.stream().map(InventoryItemDto::getItemId).toList();
+            return dsl.selectFrom(ITEM_STATS)
+                    .where(ITEM_STATS.ITEM_ID.in(equippedItemsIds))
+                    .fetch()
+                    .map(itemStatsRecord -> itemStatsRecord.into(ItemStatsDto.class));
+        } else {
+            throw new RuntimeException("Inventory not found");
+        }
     }
 }

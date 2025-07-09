@@ -6,6 +6,7 @@ package com.jiubredeemer.itemstorage.dal.entity;
 
 import com.jiubredeemer.itemstorage.dal.entity.tables.Inventory;
 import com.jiubredeemer.itemstorage.dal.entity.tables.InventoryItem;
+import com.jiubredeemer.itemstorage.dal.entity.tables.ItemStats;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Items;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Money;
 
@@ -28,6 +29,7 @@ public class Indexes {
     public static final Index IN_USE_IDX = Internal.createIndex(DSL.name("in_use_idx"), InventoryItem.INVENTORY_ITEM, new OrderField[] { InventoryItem.INVENTORY_ITEM.IN_USE }, false);
     public static final Index INVENTORY_CHARACTER_ID_IDX = Internal.createIndex(DSL.name("inventory_character_id_idx"), Inventory.INVENTORY, new OrderField[] { Inventory.INVENTORY.CHARACTER_ID }, false);
     public static final Index INVENTORY_ROOM_ID_IDX = Internal.createIndex(DSL.name("inventory_room_id_idx"), Inventory.INVENTORY, new OrderField[] { Inventory.INVENTORY.ROOM_ID }, false);
+    public static final Index ITEM_STATS_ITEM_ID_IDX = Internal.createIndex(DSL.name("item_stats_item_id_idx"), ItemStats.ITEM_STATS, new OrderField[] { ItemStats.ITEM_STATS.ITEM_ID }, true);
     public static final Index ITEMS_TYPE_IDX = Internal.createIndex(DSL.name("items_type_idx"), Items.ITEMS, new OrderField[] { Items.ITEMS.TYPE }, false);
     public static final Index MONEY_INVENTORY_ID = Internal.createIndex(DSL.name("money_inventory_id"), Money.MONEY, new OrderField[] { Money.MONEY.INVENTORY_ID }, false);
 }

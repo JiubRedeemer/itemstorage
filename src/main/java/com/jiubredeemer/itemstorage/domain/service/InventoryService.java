@@ -31,7 +31,7 @@ public class InventoryService {
     public InventoryDto equipItemByCharacterIdAndItemId(UUID roomId, UUID characterId, UUID itemId) {
         final InventoryDto inventoryDto = inventoryRepository.findInventoryByCharacterIdFull(roomId, characterId)
                 .orElseThrow();
-        final InventoryItemDto inventoryItemDto = inventoryDto.getItems().stream().filter(item -> item.getItemId().equals(itemId)).findAny().orElseThrow();
+        final InventoryItemDto inventoryItemDto = inventoryDto.getItems().stream().filter(item -> item.getId().equals(itemId)).findAny().orElseThrow();
         inventoryRepository.changeInUseStatus(itemId, !inventoryItemDto.getInUse());
         return inventoryRepository.findInventoryByCharacterIdFull(roomId, characterId)
                 .orElseThrow();
