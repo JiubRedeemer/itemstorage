@@ -1,6 +1,7 @@
 package com.jiubredeemer.itemstorage.dal.repository.inventory;
 
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.InventoryRecord;
+import com.jiubredeemer.itemstorage.domain.model.common.ItemTypeEnum;
 import com.jiubredeemer.itemstorage.domain.model.inventory.InventoryDto;
 import com.jiubredeemer.itemstorage.domain.model.inventory.InventoryItemDto;
 import com.jiubredeemer.itemstorage.domain.model.item.ItemDto;
@@ -108,10 +109,12 @@ public class InventoryRepository {
         return inventoryDto;
     }
 
-    public Boolean isExistsInventoryByCharacterId(UUID roomId, UUID characterId) {
-        return dsl.selectFrom(INVENTORY)
-                .where(INVENTORY.CHARACTER_ID.eq(characterId)).and(INVENTORY.ROOM_ID.eq(roomId))
-                .fetchOptional().isPresent();
+    public List<InventoryItemDto> findEquippedItemsByType(UUID inventoryId, ItemTypeEnum type) {
+        return dsl.select(INVENTORY_ITEM)
+                .from(INVENTORY_ITEM.join(ITEMS).on(INVENTORY_ITEM.ITEM_ID.eq(ITEMS.ID)))
+                .where(INVENTORY_ITEM.INVENTORY_ID.eq(inventoryId)).and(INVENTORY_ITEM.IN_USE.eq(true)).and(ITEMS.TYPE.eq(type.name()))
+                .fetch()
+                .map(inventoryItemRecordRecord1 ->  inventoryItemRecordRecord1.into(InventoryItemDto.class));
     }
 
     public void addItemToInventory(UUID inventoryId, UUID itemId, Long count) {
