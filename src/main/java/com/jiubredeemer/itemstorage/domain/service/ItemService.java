@@ -33,6 +33,10 @@ public class ItemService {
         itemDto.setCreatorId(userId);
         try {
             itemRepository.create(itemDto);
+            itemDto.getSkills().forEach(skill -> {
+                skill.setItemId(itemDto.getId());
+            });
+            itemRepository.createSkills(itemDto.getSkills());
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }

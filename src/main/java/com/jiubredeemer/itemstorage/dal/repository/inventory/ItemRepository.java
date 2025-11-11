@@ -2,21 +2,27 @@ package com.jiubredeemer.itemstorage.dal.repository.inventory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jiubredeemer.itemstorage.dal.entity.tables.records.ItemSkillRecord;
 import com.jiubredeemer.itemstorage.domain.model.item.ItemDto;
+import com.jiubredeemer.itemstorage.domain.model.item.ItemSkillDto;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
 import org.jooq.impl.DSL;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
-import static com.jiubredeemer.itemstorage.dal.entity.Tables.INVENTORY;
 import static com.jiubredeemer.itemstorage.dal.entity.Tables.ITEMS;
+import static com.jiubredeemer.itemstorage.dal.entity.Tables.ITEM_SKILL;
 
+@Slf4j
 @Repository
 @RequiredArgsConstructor
 public class ItemRepository {
@@ -24,20 +30,28 @@ public class ItemRepository {
     private final ObjectMapper objectMapper;
 
     public List<ItemDto> findAll() {
-        return dsl.selectFrom(ITEMS)
+        List<ItemDto> itemDtos = dsl.selectFrom(ITEMS)
                 .fetchInto(ItemDto.class);
+        enrichSkills(itemDtos);
+        return itemDtos;
     }
 
     public Optional<ItemDto> findById(UUID id) {
-        return dsl.selectFrom(ITEMS)
+        Optional<ItemDto> itemDto = dsl.selectFrom(ITEMS)
                 .where(ITEMS.ID.eq(id))
                 .fetchOptionalInto(ItemDto.class);
+        itemDto.ifPresent(itemDtoPresent -> {
+            enrichSkills(Collections.singletonList(itemDtoPresent));
+        });
+        return itemDto;
     }
 
     public List<ItemDto> findByIds(List<UUID> ids) {
-        return dsl.selectFrom(ITEMS)
+        List<ItemDto> itemDtos = dsl.selectFrom(ITEMS)
                 .where(ITEMS.ID.in(ids))
                 .fetchInto(ItemDto.class);
+        enrichSkills(itemDtos);
+        return itemDtos;
     }
 
     public List<ItemDto> searchByNameRoomAndCommunityItems(
@@ -75,11 +89,21 @@ public class ItemRepository {
             );
         }
 
-        return dsl.selectFrom(ITEMS)
+        final List<ItemDto> itemDtos = dsl.selectFrom(ITEMS)
                 .where(condition)
                 .orderBy(ITEMS.CREATED_AT.asc(), ITEMS.ID.asc())
                 .limit(limit)
                 .fetchInto(ItemDto.class);
+
+        enrichSkills(itemDtos);
+
+        return itemDtos;
+    }
+
+    public List<ItemSkillDto> findSkillsForItems(List<UUID> itemIds) {
+        return dsl.selectFrom(ITEM_SKILL)
+                .where(ITEM_SKILL.ITEM_ID.in(itemIds))
+                .fetchInto(ItemSkillDto.class);
     }
 
     public void create(ItemDto itemDto) throws JsonProcessingException {
@@ -100,4 +124,39 @@ public class ItemRepository {
                 .set(ITEMS.RARITY, itemDto.getRarity().name())
                 .execute();
     }
+
+    public void createSkills(List<ItemSkillDto> itemSkillDtos) throws JsonProcessingException {
+        List<ItemSkillRecord> recordsToSave = itemSkillDtos.stream().map(itemSkillDto -> {
+            JSONB name;
+            try {
+                name = JSONB.valueOf(objectMapper.writeValueAsString(itemSkillDto.getName()));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+            return new ItemSkillRecord(
+                    itemSkillDto.getId(),
+                    itemSkillDto.getItemId(),
+                    name,
+                    itemSkillDto.getCastTime(),
+                    itemSkillDto.getDistance(),
+                    itemSkillDto.getDescription(),
+                    itemSkillDto.getShortDescription(),
+                    itemSkillDto.getCharges(),
+                    itemSkillDto.getChargesRefill().name(),
+                    itemSkillDto.getImgUrl());
+        }).toList();
+        dsl.batchInsert(recordsToSave).execute();
+    }
+
+    private void enrichSkills(List<ItemDto> itemDtos) {
+        List<ItemSkillDto> skills = findSkillsForItems(itemDtos.stream().map(ItemDto::getId).collect(Collectors.toList()));
+        itemDtos.forEach(itemDto -> {
+            itemDto.setSkills(skills
+                    .stream()
+                    .filter(skillDto -> skillDto.getItemId().equals(itemDto.getId()))
+                    .collect(Collectors.toList()));
+        });
+    }
+
+
 }

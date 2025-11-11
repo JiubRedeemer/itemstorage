@@ -6,6 +6,7 @@ package com.jiubredeemer.itemstorage.dal.entity;
 
 import com.jiubredeemer.itemstorage.dal.entity.tables.Inventory;
 import com.jiubredeemer.itemstorage.dal.entity.tables.InventoryItem;
+import com.jiubredeemer.itemstorage.dal.entity.tables.ItemSkill;
 import com.jiubredeemer.itemstorage.dal.entity.tables.ItemStats;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Items;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Money;
@@ -42,6 +43,11 @@ public class Itemstorage extends SchemaImpl {
     public final InventoryItem INVENTORY_ITEM = InventoryItem.INVENTORY_ITEM;
 
     /**
+     * The table <code>itemstorage.item_skill</code>.
+     */
+    public final ItemSkill ITEM_SKILL = ItemSkill.ITEM_SKILL;
+
+    /**
      * The table <code>itemstorage.item_stats</code>.
      */
     public final ItemStats ITEM_STATS = ItemStats.ITEM_STATS;
@@ -74,6 +80,7 @@ public class Itemstorage extends SchemaImpl {
         return Arrays.asList(
             Inventory.INVENTORY,
             InventoryItem.INVENTORY_ITEM,
+            ItemSkill.ITEM_SKILL,
             ItemStats.ITEM_STATS,
             Items.ITEMS,
             Money.MONEY

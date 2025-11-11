@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -23,6 +24,7 @@ public class ItemDto {
     private RarityEnum rarity;
     private String description;
     private ItemOptionsDto stats;
+    private List<ItemSkillDto> skills;
     private Timestamp createdAt;
     private UUID roomId;
     private UUID creatorId;

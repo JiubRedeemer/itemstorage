@@ -6,11 +6,13 @@ package com.jiubredeemer.itemstorage.dal.entity;
 
 import com.jiubredeemer.itemstorage.dal.entity.tables.Inventory;
 import com.jiubredeemer.itemstorage.dal.entity.tables.InventoryItem;
+import com.jiubredeemer.itemstorage.dal.entity.tables.ItemSkill;
 import com.jiubredeemer.itemstorage.dal.entity.tables.ItemStats;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Items;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Money;
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.InventoryItemRecord;
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.InventoryRecord;
+import com.jiubredeemer.itemstorage.dal.entity.tables.records.ItemSkillRecord;
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.ItemStatsRecord;
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.ItemsRecord;
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.MoneyRecord;
@@ -35,6 +37,7 @@ public class Keys {
 
     public static final UniqueKey<InventoryRecord> INVENTORY_PKEY = Internal.createUniqueKey(Inventory.INVENTORY, DSL.name("inventory_pkey"), new TableField[] { Inventory.INVENTORY.ID }, true);
     public static final UniqueKey<InventoryItemRecord> INVENTORY_ITEM_PKEY = Internal.createUniqueKey(InventoryItem.INVENTORY_ITEM, DSL.name("inventory_item_pkey"), new TableField[] { InventoryItem.INVENTORY_ITEM.ID }, true);
+    public static final UniqueKey<ItemSkillRecord> ITEM_SKILL_PKEY = Internal.createUniqueKey(ItemSkill.ITEM_SKILL, DSL.name("item_skill_pkey"), new TableField[] { ItemSkill.ITEM_SKILL.ID }, true);
     public static final UniqueKey<ItemStatsRecord> ITEM_STATS_PK = Internal.createUniqueKey(ItemStats.ITEM_STATS, DSL.name("item_stats_pk"), new TableField[] { ItemStats.ITEM_STATS.ID }, true);
     public static final UniqueKey<ItemsRecord> ITEMS_PKEY = Internal.createUniqueKey(Items.ITEMS, DSL.name("items_pkey"), new TableField[] { Items.ITEMS.ID }, true);
     public static final UniqueKey<MoneyRecord> MONEY_PKEY = Internal.createUniqueKey(Money.MONEY, DSL.name("money_pkey"), new TableField[] { Money.MONEY.ID }, true);
@@ -45,6 +48,7 @@ public class Keys {
 
     public static final ForeignKey<InventoryItemRecord, InventoryRecord> INVENTORY_ITEM__FKINVENTORY_155964 = Internal.createForeignKey(InventoryItem.INVENTORY_ITEM, DSL.name("fkinventory_155964"), new TableField[] { InventoryItem.INVENTORY_ITEM.INVENTORY_ID }, Keys.INVENTORY_PKEY, new TableField[] { Inventory.INVENTORY.ID }, true);
     public static final ForeignKey<InventoryItemRecord, ItemsRecord> INVENTORY_ITEM__FKINVENTORY_686023 = Internal.createForeignKey(InventoryItem.INVENTORY_ITEM, DSL.name("fkinventory_686023"), new TableField[] { InventoryItem.INVENTORY_ITEM.ITEM_ID }, Keys.ITEMS_PKEY, new TableField[] { Items.ITEMS.ID }, true);
+    public static final ForeignKey<ItemSkillRecord, ItemsRecord> ITEM_SKILL__FKITEM_SKILL469967 = Internal.createForeignKey(ItemSkill.ITEM_SKILL, DSL.name("fkitem_skill469967"), new TableField[] { ItemSkill.ITEM_SKILL.ITEM_ID }, Keys.ITEMS_PKEY, new TableField[] { Items.ITEMS.ID }, true);
     public static final ForeignKey<ItemStatsRecord, ItemsRecord> ITEM_STATS__ITEM_STATS_ITEMS_FK = Internal.createForeignKey(ItemStats.ITEM_STATS, DSL.name("item_stats_items_fk"), new TableField[] { ItemStats.ITEM_STATS.ITEM_ID }, Keys.ITEMS_PKEY, new TableField[] { Items.ITEMS.ID }, true);
     public static final ForeignKey<MoneyRecord, InventoryRecord> MONEY__FKMONEY686639 = Internal.createForeignKey(Money.MONEY, DSL.name("fkmoney686639"), new TableField[] { Money.MONEY.INVENTORY_ID }, Keys.INVENTORY_PKEY, new TableField[] { Inventory.INVENTORY.ID }, true);
 }
