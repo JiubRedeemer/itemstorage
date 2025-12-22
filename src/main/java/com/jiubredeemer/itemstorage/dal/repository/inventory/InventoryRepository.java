@@ -1,10 +1,13 @@
 package com.jiubredeemer.itemstorage.dal.repository.inventory;
 
+import com.jiubredeemer.itemstorage.dal.entity.tables.records.InventoryItemSkillRecord;
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.InventoryRecord;
 import com.jiubredeemer.itemstorage.domain.model.common.ItemTypeEnum;
 import com.jiubredeemer.itemstorage.domain.model.inventory.InventoryDto;
 import com.jiubredeemer.itemstorage.domain.model.inventory.InventoryItemDto;
+import com.jiubredeemer.itemstorage.domain.model.item.InventoryItemSkillDto;
 import com.jiubredeemer.itemstorage.domain.model.item.ItemDto;
+import com.jiubredeemer.itemstorage.domain.model.item.ItemSkillDto;
 import com.jiubredeemer.itemstorage.domain.model.item.ItemStatsDto;
 import lombok.RequiredArgsConstructor;
 import org.jooq.DSLContext;
@@ -60,10 +63,24 @@ public class InventoryRepository {
                 .where(INVENTORY_ITEM.INVENTORY_ID.eq(inventoryId))
                 .fetch()
                 .map(inventoryItemRecord -> inventoryItemRecord.into(InventoryItemDto.class));
+
         final List<UUID> itemIds = inventoryItemDtos.stream().map(InventoryItemDto::getItemId).toList();
         final Map<UUID, ItemDto> itemsMap =
                 itemRepository.findByIds(itemIds).stream().collect(Collectors.toMap(ItemDto::getId, itemDto -> itemDto));
-        inventoryItemDtos.forEach(inventoryItemDto -> inventoryItemDto.setItem(itemsMap.get(inventoryItemDto.getItemId())));
+
+        final List<UUID> inventoryItemsIds = inventoryItemDtos.stream()
+                .map(InventoryItemDto::getId)
+                .toList();
+        final Map<UUID, List<InventoryItemSkillDto>> inventoryItemSkillMap =
+                findInventoryItemSkillsByInventoryItemsIds(inventoryItemsIds)
+                        .stream()
+                        .collect(Collectors.groupingBy(
+                                InventoryItemSkillDto::getInventoryItemId));
+
+        inventoryItemDtos.forEach(inventoryItemDto -> {
+            inventoryItemDto.setItem(itemsMap.get(inventoryItemDto.getItemId()));
+            inventoryItemDto.setSkills(inventoryItemSkillMap.get(inventoryItemDto.getId()));
+        });
         return inventoryItemDtos;
     }
 
@@ -90,6 +107,7 @@ public class InventoryRepository {
 
     public void deleteItemFromInventory(UUID itemId) {
         dsl.delete(INVENTORY_ITEM).where(INVENTORY_ITEM.ID.eq(itemId)).execute();
+        dsl.delete(INVENTORY_ITEM_SKILL).where(INVENTORY_ITEM_SKILL.INVENTORY_ITEM_ID.eq(itemId)).execute();
     }
 
     public Optional<InventoryItemDto> changeItemCount(UUID itemId, Long count) {
@@ -114,13 +132,19 @@ public class InventoryRepository {
                 .from(INVENTORY_ITEM.join(ITEMS).on(INVENTORY_ITEM.ITEM_ID.eq(ITEMS.ID)))
                 .where(INVENTORY_ITEM.INVENTORY_ID.eq(inventoryId)).and(INVENTORY_ITEM.IN_USE.eq(true)).and(ITEMS.TYPE.eq(type.name()))
                 .fetch()
-                .map(inventoryItemRecordRecord1 ->  inventoryItemRecordRecord1.into(InventoryItemDto.class));
+                .map(inventoryItemRecordRecord1 -> inventoryItemRecordRecord1.into(InventoryItemDto.class));
     }
 
-    public void addItemToInventory(UUID inventoryId, UUID itemId, Long count) {
+    public InventoryItemDto addItemToInventory(UUID inventoryId, UUID itemId, Long count) {
+        UUID id = UUID.randomUUID();
         dsl.insertInto(INVENTORY_ITEM, INVENTORY_ITEM.ID, INVENTORY_ITEM.INVENTORY_ID, INVENTORY_ITEM.ITEM_ID, INVENTORY_ITEM.COUNT, INVENTORY_ITEM.IN_USE)
-                .values(UUID.randomUUID(), inventoryId, itemId, count, false)
+                .values(id, inventoryId, itemId, count, false)
                 .execute();
+        return dsl.selectFrom(INVENTORY_ITEM)
+                .where(INVENTORY_ITEM.ID.eq(id))
+                .fetchOptional()
+                .map(inventoryItemRecord -> inventoryItemRecord.into(InventoryItemDto.class))
+                .orElseThrow();
     }
 
     public List<ItemStatsDto> getEquippedItemStats(UUID roomId, UUID characterId) {
@@ -138,6 +162,44 @@ public class InventoryRepository {
                     .map(itemStatsRecord -> itemStatsRecord.into(ItemStatsDto.class));
         } else {
             throw new RuntimeException("Inventory not found");
+        }
+    }
+
+    public List<InventoryItemSkillDto> findInventoryItemSkillsByInventoryItemsIds(List<UUID> inventoryItemIds) {
+        final List<InventoryItemSkillDto> inventoryItemSkillDtos = dsl.selectFrom(INVENTORY_ITEM_SKILL)
+                .where(INVENTORY_ITEM_SKILL.INVENTORY_ITEM_ID.in(inventoryItemIds))
+                .fetchInto(InventoryItemSkillDto.class);
+        inventoryItemSkillDtos.forEach(inventoryItemSkillDto -> {
+            inventoryItemSkillDto.setSkill(itemRepository.findSkillById(inventoryItemSkillDto.getItemSkillId()));
+        });
+        return inventoryItemSkillDtos;
+    }
+
+    public List<InventoryItemSkillDto> createInventoryItemSkills(List<ItemSkillDto> skills, UUID inventoryItemId) {
+        final List<InventoryItemSkillRecord> inventoryItemSkillRecords = skills.stream().map(itemSkillDto -> {
+            final InventoryItemSkillRecord inventoryItemSkillRecord = new InventoryItemSkillRecord();
+            inventoryItemSkillRecord.setId(UUID.randomUUID());
+            inventoryItemSkillRecord.setInventoryItemId(inventoryItemId);
+            inventoryItemSkillRecord.setItemSkillId(itemSkillDto.getId());
+            inventoryItemSkillRecord.setCurrentCharges(itemSkillDto.getCharges());
+            return inventoryItemSkillRecord;
+        }).toList();
+        dsl.batchInsert(inventoryItemSkillRecords).execute();
+        return dsl.selectFrom(INVENTORY_ITEM_SKILL)
+                .where(INVENTORY_ITEM_SKILL.INVENTORY_ITEM_ID.eq(inventoryItemId))
+                .fetchInto(InventoryItemSkillDto.class);
+    }
+
+    public void useSkill(UUID itemId, UUID skillId) {
+        final InventoryItemSkillDto inventoryItemSkillDto = dsl.selectFrom(INVENTORY_ITEM_SKILL)
+                .where(INVENTORY_ITEM_SKILL.INVENTORY_ITEM_ID.eq(itemId).and(INVENTORY_ITEM_SKILL.ITEM_SKILL_ID.eq(skillId)))
+                .fetchOptional()
+                .map(inventoryItemSkillRecord -> inventoryItemSkillRecord.into(InventoryItemSkillDto.class))
+                .orElseThrow();
+        if (inventoryItemSkillDto.getCurrentCharges() > 0) {
+            dsl.update(INVENTORY_ITEM_SKILL).set(INVENTORY_ITEM_SKILL.CURRENT_CHARGES, inventoryItemSkillDto.getCurrentCharges() - 1)
+                    .where(INVENTORY_ITEM_SKILL.ID.eq(skillId))
+                    .execute();
         }
     }
 }

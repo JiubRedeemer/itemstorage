@@ -6,6 +6,7 @@ package com.jiubredeemer.itemstorage.dal.entity.tables;
 
 import com.jiubredeemer.itemstorage.dal.entity.Itemstorage;
 import com.jiubredeemer.itemstorage.dal.entity.Keys;
+import com.jiubredeemer.itemstorage.dal.entity.tables.InventoryItemSkill.InventoryItemSkillPath;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Items.ItemsPath;
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.ItemSkillRecord;
 
@@ -195,6 +196,19 @@ public class ItemSkill extends TableImpl<ItemSkillRecord> {
             _items = new ItemsPath(this, Keys.ITEM_SKILL__FKITEM_SKILL469967, null);
 
         return _items;
+    }
+
+    private transient InventoryItemSkillPath _inventoryItemSkill;
+
+    /**
+     * Get the implicit to-many join path to the
+     * <code>itemstorage.inventory_item_skill</code> table
+     */
+    public InventoryItemSkillPath inventoryItemSkill() {
+        if (_inventoryItemSkill == null)
+            _inventoryItemSkill = new InventoryItemSkillPath(this, null, Keys.INVENTORY_ITEM_SKILL__FKINVENTORY_355492.getInverseKey());
+
+        return _inventoryItemSkill;
     }
 
     @Override

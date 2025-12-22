@@ -1,18 +1,25 @@
 package com.jiubredeemer.itemstorage.domain.service;
 
 import com.jiubredeemer.itemstorage.dal.repository.inventory.InventoryRepository;
+import com.jiubredeemer.itemstorage.dal.repository.inventory.ItemRepository;
 import com.jiubredeemer.itemstorage.domain.model.inventory.InventoryDto;
 import com.jiubredeemer.itemstorage.domain.model.inventory.InventoryItemDto;
+import com.jiubredeemer.itemstorage.domain.model.item.InventoryItemSkillDto;
+import com.jiubredeemer.itemstorage.domain.model.item.ItemDto;
+import com.jiubredeemer.itemstorage.domain.model.item.ItemSkillDto;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
 public class InventoryService {
     private final InventoryRepository inventoryRepository;
+    private final ItemRepository itemRepository;
 
-    public InventoryService(InventoryRepository inventoryRepository) {
+    public InventoryService(InventoryRepository inventoryRepository, ItemRepository itemRepository) {
         this.inventoryRepository = inventoryRepository;
+        this.itemRepository = itemRepository;
     }
 
     public InventoryDto getInventoryByRoomIdAndCharacterId(UUID roomId, UUID characterId) {
@@ -67,8 +74,21 @@ public class InventoryService {
         inventoryDto.getItems().stream().filter(item -> item.getId().equals(itemId)).findAny().ifPresent(item -> {
             throw new IllegalStateException("Item already exists in inventory");
         });
-        inventoryRepository.addItemToInventory(inventoryDto.getId(), itemId, count);
+        final ItemDto itemDto = itemRepository.findById(itemId).orElseThrow();
+        final InventoryItemDto inventoryItemDto = inventoryRepository.addItemToInventory(inventoryDto.getId(), itemId, count);
+        createInventoryItemSkills(itemDto.getSkills(), inventoryItemDto.getId());
         return inventoryRepository.findInventoryByCharacterIdFull(roomId, characterId)
                 .orElseThrow();
+    }
+
+    private List<InventoryItemSkillDto> createInventoryItemSkills(List<ItemSkillDto> skills, UUID inventoryItemId) {
+        return inventoryRepository.createInventoryItemSkills(skills, inventoryItemId);
+    }
+
+    public void useSkill(UUID roomId, UUID characterId, UUID itemId, UUID skillId) {
+        final InventoryDto inventoryDto = inventoryRepository.findInventoryByCharacterIdFull(roomId, characterId)
+                .orElseThrow();
+        inventoryDto.getItems().stream().filter(item -> item.getId().equals(itemId)).findAny().orElseThrow();
+        inventoryRepository.useSkill(itemId, skillId);
     }
 }

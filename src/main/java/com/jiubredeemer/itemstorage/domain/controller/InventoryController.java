@@ -44,4 +44,9 @@ public class InventoryController {
     public InventoryDto deleteItemFromInventory(@PathVariable UUID roomId, @PathVariable UUID characterId, @PathVariable UUID itemId, @PathVariable Long count) {
         return inventoryService.addItemToInventory(roomId, characterId, itemId, count);
     }
+
+    @PostMapping("/items/{itemId}/skills/{skillId}/use")
+    public void useInventoryItemSkill(@PathVariable UUID roomId, @PathVariable UUID characterId, @PathVariable UUID itemId, @PathVariable UUID skillId) {
+        inventoryService.useSkill(roomId, characterId, itemId, skillId);
+    }
 }

@@ -106,6 +106,12 @@ public class ItemRepository {
                 .fetchInto(ItemSkillDto.class);
     }
 
+    public ItemSkillDto findSkillById(UUID id) {
+        return dsl.selectFrom(ITEM_SKILL)
+                .where(ITEM_SKILL.ID.eq(id))
+                .fetchOneInto(ItemSkillDto.class);
+    }
+
     public void create(ItemDto itemDto) throws JsonProcessingException {
         dsl.insertInto(ITEMS)
                 .set(ITEMS.ID, itemDto.getId())
