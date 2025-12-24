@@ -169,9 +169,7 @@ public class InventoryRepository {
         final List<InventoryItemSkillDto> inventoryItemSkillDtos = dsl.selectFrom(INVENTORY_ITEM_SKILL)
                 .where(INVENTORY_ITEM_SKILL.INVENTORY_ITEM_ID.in(inventoryItemIds))
                 .fetchInto(InventoryItemSkillDto.class);
-        inventoryItemSkillDtos.forEach(inventoryItemSkillDto -> {
-            inventoryItemSkillDto.setSkill(itemRepository.findSkillById(inventoryItemSkillDto.getItemSkillId()));
-        });
+        inventoryItemSkillDtos.forEach(inventoryItemSkillDto -> inventoryItemSkillDto.setSkill(itemRepository.findSkillById(inventoryItemSkillDto.getItemSkillId())));
         return inventoryItemSkillDtos;
     }
 
@@ -192,7 +190,7 @@ public class InventoryRepository {
 
     public void useSkill(UUID itemId, UUID skillId) {
         final InventoryItemSkillDto inventoryItemSkillDto = dsl.selectFrom(INVENTORY_ITEM_SKILL)
-                .where(INVENTORY_ITEM_SKILL.INVENTORY_ITEM_ID.eq(itemId).and(INVENTORY_ITEM_SKILL.ITEM_SKILL_ID.eq(skillId)))
+                .where(INVENTORY_ITEM_SKILL.INVENTORY_ITEM_ID.eq(itemId).and(INVENTORY_ITEM_SKILL.ID.eq(skillId)))
                 .fetchOptional()
                 .map(inventoryItemSkillRecord -> inventoryItemSkillRecord.into(InventoryItemSkillDto.class))
                 .orElseThrow();
