@@ -4,6 +4,7 @@ import com.jiubredeemer.itemstorage.dal.repository.inventory.InventoryRepository
 import com.jiubredeemer.itemstorage.dal.repository.inventory.ItemRepository;
 import com.jiubredeemer.itemstorage.domain.model.inventory.InventoryDto;
 import com.jiubredeemer.itemstorage.domain.model.inventory.InventoryItemDto;
+import com.jiubredeemer.itemstorage.domain.model.item.ChargesRefillEnum;
 import com.jiubredeemer.itemstorage.domain.model.item.InventoryItemSkillDto;
 import com.jiubredeemer.itemstorage.domain.model.item.ItemDto;
 import com.jiubredeemer.itemstorage.domain.model.item.ItemSkillDto;
@@ -90,5 +91,20 @@ public class InventoryService {
                 .orElseThrow();
         inventoryDto.getItems().stream().filter(item -> item.getId().equals(itemId)).findAny().orElseThrow();
         inventoryRepository.useSkill(itemId, skillId);
+    }
+
+    public void characterRest(UUID roomId, UUID characterId, ChargesRefillEnum restType) {
+        final InventoryDto inventoryDto = inventoryRepository.findInventoryByCharacterIdFull(roomId, characterId)
+                .orElseThrow();
+        inventoryDto.getItems().forEach(item -> {
+            if (item.getSkills() == null) return;
+            item.getSkills().forEach(skill -> {
+                if (restType.equals(skill.getSkill().getChargesRefill()) ||
+                        (ChargesRefillEnum.LONG_REST.equals(restType) && ChargesRefillEnum.SHORT_REST.equals(skill.getSkill().getChargesRefill()))) {
+                    skill.setCurrentCharges(skill.getSkill().getCharges());
+                    inventoryRepository.updateInventoryItemSkill(skill);
+                }
+            });
+        });
     }
 }

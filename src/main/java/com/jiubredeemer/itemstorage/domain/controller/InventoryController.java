@@ -2,8 +2,10 @@ package com.jiubredeemer.itemstorage.domain.controller;
 
 import com.jiubredeemer.itemstorage.domain.model.inventory.InventoryDto;
 import com.jiubredeemer.itemstorage.domain.model.inventory.InventoryItemDto;
+import com.jiubredeemer.itemstorage.domain.model.item.ChargesRefillEnum;
 import com.jiubredeemer.itemstorage.domain.service.InventoryService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -48,5 +50,15 @@ public class InventoryController {
     @PostMapping("/items/{itemId}/skills/{skillId}/use")
     public void useInventoryItemSkill(@PathVariable UUID roomId, @PathVariable UUID characterId, @PathVariable UUID itemId, @PathVariable UUID skillId) {
         inventoryService.useSkill(roomId, characterId, itemId, skillId);
+    }
+
+    @PostMapping("/rest/{restType}")
+    public ResponseEntity<Void> characterRest(
+            @PathVariable UUID roomId,
+            @PathVariable UUID characterId,
+            @PathVariable ChargesRefillEnum restType
+    ) {
+        inventoryService.characterRest(roomId, characterId, restType);
+        return ResponseEntity.ok().build();
     }
 }

@@ -188,6 +188,17 @@ public class InventoryRepository {
                 .fetchInto(InventoryItemSkillDto.class);
     }
 
+    public InventoryItemSkillDto updateInventoryItemSkill(InventoryItemSkillDto inventoryItemSkillDto) {
+        dsl.update(INVENTORY_ITEM_SKILL).
+                set(INVENTORY_ITEM_SKILL.CURRENT_CHARGES, inventoryItemSkillDto.getCurrentCharges())
+                .execute();
+        return dsl.selectFrom(INVENTORY_ITEM_SKILL)
+                .where(INVENTORY_ITEM_SKILL.ID.eq(inventoryItemSkillDto.getId()))
+                .fetchOptional()
+                .map(inventoryItemSkillRecord -> inventoryItemSkillRecord.into(InventoryItemSkillDto.class))
+                .orElseThrow();
+    }
+
     public void useSkill(UUID itemId, UUID skillId) {
         final InventoryItemSkillDto inventoryItemSkillDto = dsl.selectFrom(INVENTORY_ITEM_SKILL)
                 .where(INVENTORY_ITEM_SKILL.INVENTORY_ITEM_ID.eq(itemId).and(INVENTORY_ITEM_SKILL.ID.eq(skillId)))
