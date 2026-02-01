@@ -1,6 +1,5 @@
 package com.jiubredeemer.itemstorage.domain.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.jiubredeemer.itemstorage.dal.repository.inventory.ItemRepository;
 import com.jiubredeemer.itemstorage.domain.model.item.ItemDto;
 import lombok.RequiredArgsConstructor;
@@ -31,15 +30,11 @@ public class ItemService {
     public ItemDto addItem(UUID roomId, UUID userId, ItemDto itemDto) {
         itemDto.setRoomId(roomId);
         itemDto.setCreatorId(userId);
-        try {
-            itemRepository.create(itemDto);
-            itemDto.getSkills().forEach(skill -> {
-                skill.setItemId(itemDto.getId());
-            });
-            itemRepository.createSkills(itemDto.getSkills());
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+        itemRepository.create(itemDto);
+        itemDto.getSkills().forEach(skill -> {
+            skill.setItemId(itemDto.getId());
+        });
+        itemRepository.createSkills(itemDto.getSkills());
         return itemRepository.findById(itemDto.getId()).orElseThrow();
     }
 }

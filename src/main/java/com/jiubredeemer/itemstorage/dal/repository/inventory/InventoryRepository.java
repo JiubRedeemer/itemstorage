@@ -11,6 +11,7 @@ import com.jiubredeemer.itemstorage.domain.model.item.ItemSkillDto;
 import com.jiubredeemer.itemstorage.domain.model.item.ItemStatsDto;
 import lombok.RequiredArgsConstructor;
 import org.jooq.DSLContext;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

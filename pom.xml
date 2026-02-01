@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.4.3</version>
+        <version>4.0.2</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.jiubredeemer</groupId>
@@ -13,30 +13,25 @@
     <version>0.0.1-SNAPSHOT</version>
     <name>itemstorage</name>
     <description>itemstorage</description>
-    <url/>
-    <licenses>
-        <license/>
-    </licenses>
-    <developers>
-        <developer/>
-    </developers>
-    <scm>
-        <connection/>
-        <developerConnection/>
-        <tag/>
-        <url/>
-    </scm>
     <properties>
-        <java.version>21</java.version>
+        <java.version>25</java.version>
+        <spring.version>4.0.2</spring.version>
     </properties>
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+            <version>${spring.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jdbc</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jooq</artifactId>
+            <version>${spring.version}</version>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -51,6 +46,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <version>${spring.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -67,6 +63,10 @@
             <groupId>org.jooq</groupId>
             <artifactId>jooq-codegen</artifactId>
             <version>${jooq.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
         </dependency>
     </dependencies>
 
@@ -87,6 +87,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring.version}</version>
                 <configuration>
 <!--                    <excludes>-->
 <!--                        <exclude>-->

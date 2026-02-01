@@ -1,6 +1,5 @@
 package com.jiubredeemer.itemstorage.dal.configuration;
 
-import lombok.SneakyThrows;
 import org.jooq.codegen.GenerationTool;
 import org.jooq.meta.jaxb.*;
 import org.springframework.beans.factory.annotation.Value;

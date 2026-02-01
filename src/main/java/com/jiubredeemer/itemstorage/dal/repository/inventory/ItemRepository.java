@@ -1,7 +1,5 @@
 package com.jiubredeemer.itemstorage.dal.repository.inventory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.ItemSkillRecord;
 import com.jiubredeemer.itemstorage.domain.model.item.ItemDto;
 import com.jiubredeemer.itemstorage.domain.model.item.ItemSkillDto;
@@ -11,6 +9,7 @@ import org.jooq.DSLContext;
 import org.jooq.JSONB;
 import org.jooq.impl.DSL;
 import org.springframework.stereotype.Repository;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -112,7 +111,7 @@ public class ItemRepository {
                 .fetchOneInto(ItemSkillDto.class);
     }
 
-    public void create(ItemDto itemDto) throws JsonProcessingException {
+    public void create(ItemDto itemDto) {
         dsl.insertInto(ITEMS)
                 .set(ITEMS.ID, itemDto.getId())
                 .set(ITEMS.ROOM_ID, itemDto.getRoomId())
@@ -131,14 +130,11 @@ public class ItemRepository {
                 .execute();
     }
 
-    public void createSkills(List<ItemSkillDto> itemSkillDtos) throws JsonProcessingException {
+    public void createSkills(List<ItemSkillDto> itemSkillDtos) {
         List<ItemSkillRecord> recordsToSave = itemSkillDtos.stream().map(itemSkillDto -> {
             JSONB name;
-            try {
-                name = JSONB.valueOf(objectMapper.writeValueAsString(itemSkillDto.getName()));
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
+            name = JSONB.valueOf(objectMapper.writeValueAsString(itemSkillDto.getName()));
+
             return new ItemSkillRecord(
                     itemSkillDto.getId(),
                     itemSkillDto.getItemId(),
