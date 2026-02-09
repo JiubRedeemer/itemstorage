@@ -124,7 +124,7 @@ public class ItemRepository {
                 .set(ITEMS.IMG_URL, itemDto.getImgUrl())
                 .set(ITEMS.NAME, JSONB.valueOf(objectMapper.writeValueAsString(itemDto.getName())))
                 .set(ITEMS.TYPE, itemDto.getType().name())
-                .set(ITEMS.SUBTYPE, itemDto.getSubtype().name())
+                .set(ITEMS.SUBTYPE, itemDto.getSubtype() != null ? itemDto.getSubtype().name() : null)
                 .set(ITEMS.STATS, JSONB.valueOf(objectMapper.writeValueAsString(itemDto.getStats())))
                 .set(ITEMS.RARITY, itemDto.getRarity().name())
                 .execute();
