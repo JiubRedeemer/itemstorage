@@ -19,6 +19,8 @@ public class InventoryItemDto {
     private ItemDto item;
     private Long count;
     private Boolean inUse;
+    private Long attackBonusValue;
+    private Long damageBonusValue;
     private Boolean requirementsOk;
     private List<InventoryItemSkillDto> skills;
 }

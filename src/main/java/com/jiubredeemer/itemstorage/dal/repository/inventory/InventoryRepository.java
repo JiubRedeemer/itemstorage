@@ -11,7 +11,6 @@ import com.jiubredeemer.itemstorage.domain.model.item.ItemSkillDto;
 import com.jiubredeemer.itemstorage.domain.model.item.ItemStatsDto;
 import lombok.RequiredArgsConstructor;
 import org.jooq.DSLContext;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -211,5 +210,16 @@ public class InventoryRepository {
                     .where(INVENTORY_ITEM_SKILL.ID.eq(skillId))
                     .execute();
         }
+    }
+
+    public void changeBonusAttackValue(UUID itemId, Long value) {
+        dsl.update(INVENTORY_ITEM).set(INVENTORY_ITEM.ATTACK_BONUS_VALUE, value)
+                .where(INVENTORY_ITEM.ID.eq(itemId))
+                .execute();
+    }
+    public void changeBonusDamageValue(UUID itemId, Long value) {
+        dsl.update(INVENTORY_ITEM).set(INVENTORY_ITEM.DAMAGE_BONUS_VALUE, value)
+                .where(INVENTORY_ITEM.ID.eq(itemId))
+                .execute();
     }
 }
