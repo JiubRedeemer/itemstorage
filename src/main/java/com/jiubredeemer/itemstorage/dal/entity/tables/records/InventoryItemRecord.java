@@ -90,6 +90,34 @@ public class InventoryItemRecord extends UpdatableRecordImpl<InventoryItemRecord
         return (Boolean) get(4);
     }
 
+    /**
+     * Setter for <code>itemstorage.inventory_item.attack_bonus_value</code>.
+     */
+    public void setAttackBonusValue(Long value) {
+        set(5, value);
+    }
+
+    /**
+     * Getter for <code>itemstorage.inventory_item.attack_bonus_value</code>.
+     */
+    public Long getAttackBonusValue() {
+        return (Long) get(5);
+    }
+
+    /**
+     * Setter for <code>itemstorage.inventory_item.damage_bonus_value</code>.
+     */
+    public void setDamageBonusValue(Long value) {
+        set(6, value);
+    }
+
+    /**
+     * Getter for <code>itemstorage.inventory_item.damage_bonus_value</code>.
+     */
+    public Long getDamageBonusValue() {
+        return (Long) get(6);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -113,7 +141,7 @@ public class InventoryItemRecord extends UpdatableRecordImpl<InventoryItemRecord
     /**
      * Create a detached, initialised InventoryItemRecord
      */
-    public InventoryItemRecord(UUID id, UUID inventoryId, UUID itemId, Long count, Boolean inUse) {
+    public InventoryItemRecord(UUID id, UUID inventoryId, UUID itemId, Long count, Boolean inUse, Long attackBonusValue, Long damageBonusValue) {
         super(InventoryItem.INVENTORY_ITEM);
 
         setId(id);
@@ -121,6 +149,8 @@ public class InventoryItemRecord extends UpdatableRecordImpl<InventoryItemRecord
         setItemId(itemId);
         setCount(count);
         setInUse(inUse);
+        setAttackBonusValue(attackBonusValue);
+        setDamageBonusValue(damageBonusValue);
         resetChangedOnNotNull();
     }
 }

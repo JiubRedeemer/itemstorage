@@ -32,6 +32,16 @@ public class InventoryController {
         return inventoryService.equipItemByCharacterIdAndItemId(roomId, characterId, itemId);
     }
 
+    @PatchMapping("/items/{itemId}/attack/bonus/{value}")
+    public InventoryDto addBonusAttack(@PathVariable UUID roomId, @PathVariable UUID characterId, @PathVariable UUID itemId, @PathVariable Long value) {
+        return inventoryService.addBonusAttack(roomId, characterId, itemId, value);
+    }
+
+    @PatchMapping("/items/{itemId}/damage/bonus/{value}")
+    public InventoryDto addBonusDamage(@PathVariable UUID roomId, @PathVariable UUID characterId, @PathVariable UUID itemId, @PathVariable Long value) {
+        return inventoryService.addBonusDamage(roomId, characterId, itemId, value);
+    }
+
     @PatchMapping("/{itemId}/count/{count}")
     public InventoryDto changeItemCount(@PathVariable UUID roomId, @PathVariable UUID characterId, @PathVariable UUID itemId, @PathVariable Long count) {
         return inventoryService.changeItemCount(roomId, characterId, itemId, count);
