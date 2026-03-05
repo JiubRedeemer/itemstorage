@@ -107,8 +107,8 @@ public class InventoryRepository {
     }
 
     public void deleteItemFromInventory(UUID itemId) {
-        dsl.delete(INVENTORY_ITEM).where(INVENTORY_ITEM.ID.eq(itemId)).execute();
         dsl.delete(INVENTORY_ITEM_SKILL).where(INVENTORY_ITEM_SKILL.INVENTORY_ITEM_ID.eq(itemId)).execute();
+        dsl.delete(INVENTORY_ITEM).where(INVENTORY_ITEM.ID.eq(itemId)).execute();
     }
 
     public Optional<InventoryItemDto> changeItemCount(UUID itemId, Long count) {
