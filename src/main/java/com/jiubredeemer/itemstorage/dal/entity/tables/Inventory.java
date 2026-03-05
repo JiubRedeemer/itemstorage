@@ -11,6 +11,7 @@ import com.jiubredeemer.itemstorage.dal.entity.tables.InventoryItem.InventoryIte
 import com.jiubredeemer.itemstorage.dal.entity.tables.Money.MoneyPath;
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.InventoryRecord;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -79,6 +80,11 @@ public class Inventory extends TableImpl<InventoryRecord> {
      * The column <code>itemstorage.inventory.total_weight</code>.
      */
     public final TableField<InventoryRecord, Long> TOTAL_WEIGHT = createField(DSL.name("total_weight"), SQLDataType.BIGINT.nullable(false), this, "");
+
+    /**
+     * The column <code>itemstorage.inventory.deleted_at</code>.
+     */
+    public final TableField<InventoryRecord, LocalDateTime> DELETED_AT = createField(DSL.name("deleted_at"), SQLDataType.LOCALDATETIME(6), this, "");
 
     private Inventory(Name alias, Table<InventoryRecord> aliased) {
         this(alias, aliased, (Field<?>[]) null, null);

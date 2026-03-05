@@ -11,58 +11,64 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping(value = "/api/{roomId}/inventory/{characterId}")
+@RequestMapping(value = "/api/{roomId}/inventory")
 @RequiredArgsConstructor
 public class InventoryController {
 
     private final InventoryService inventoryService;
 
-    @GetMapping("")
+    @DeleteMapping("/logical")
+    public ResponseEntity deleteLogicalByRoomId(@PathVariable UUID roomId) {
+        inventoryService.deleteRoomLogical(roomId);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{characterId}")
     public InventoryDto findByCharacterId(@PathVariable UUID roomId, @PathVariable UUID characterId) {
         return inventoryService.getInventoryByRoomIdAndCharacterId(roomId, characterId);
     }
 
-    @GetMapping("/items/{itemId}")
+    @GetMapping("/{characterId}/items/{itemId}")
     public InventoryItemDto findItemById(@PathVariable UUID roomId, @PathVariable UUID characterId, @PathVariable UUID itemId) {
         return inventoryService.getItemByCharacterIdAndItemId(roomId, characterId, itemId);
     }
 
-    @PatchMapping("/equip/{itemId}")
+    @PatchMapping("/{characterId}/equip/{itemId}")
     public InventoryDto equipItemByCharacterIdAndItemId(@PathVariable UUID roomId, @PathVariable UUID characterId, @PathVariable UUID itemId) {
         return inventoryService.equipItemByCharacterIdAndItemId(roomId, characterId, itemId);
     }
 
-    @PatchMapping("/items/{itemId}/attack/bonus/{value}")
+    @PatchMapping("/{characterId}/items/{itemId}/attack/bonus/{value}")
     public InventoryDto addBonusAttack(@PathVariable UUID roomId, @PathVariable UUID characterId, @PathVariable UUID itemId, @PathVariable Long value) {
         return inventoryService.addBonusAttack(roomId, characterId, itemId, value);
     }
 
-    @PatchMapping("/items/{itemId}/damage/bonus/{value}")
+    @PatchMapping("/{characterId}/items/{itemId}/damage/bonus/{value}")
     public InventoryDto addBonusDamage(@PathVariable UUID roomId, @PathVariable UUID characterId, @PathVariable UUID itemId, @PathVariable Long value) {
         return inventoryService.addBonusDamage(roomId, characterId, itemId, value);
     }
 
-    @PatchMapping("/{itemId}/count/{count}")
+    @PatchMapping("/{characterId}/{itemId}/count/{count}")
     public InventoryDto changeItemCount(@PathVariable UUID roomId, @PathVariable UUID characterId, @PathVariable UUID itemId, @PathVariable Long count) {
         return inventoryService.changeItemCount(roomId, characterId, itemId, count);
     }
 
-    @DeleteMapping("/{itemId}")
+    @DeleteMapping("/{characterId}/{itemId}")
     public InventoryDto deleteItemFromInventory(@PathVariable UUID roomId, @PathVariable UUID characterId, @PathVariable UUID itemId) {
         return inventoryService.deleteItemFromInventory(roomId, characterId, itemId);
     }
 
-    @PutMapping("/{itemId}/{count}")
+    @PutMapping("/{characterId}/{itemId}/{count}")
     public InventoryDto deleteItemFromInventory(@PathVariable UUID roomId, @PathVariable UUID characterId, @PathVariable UUID itemId, @PathVariable Long count) {
         return inventoryService.addItemToInventory(roomId, characterId, itemId, count);
     }
 
-    @PostMapping("/items/{itemId}/skills/{skillId}/use")
+    @PostMapping("/{characterId}/items/{itemId}/skills/{skillId}/use")
     public void useInventoryItemSkill(@PathVariable UUID roomId, @PathVariable UUID characterId, @PathVariable UUID itemId, @PathVariable UUID skillId) {
         inventoryService.useSkill(roomId, characterId, itemId, skillId);
     }
 
-    @PostMapping("/rest/{restType}")
+    @PostMapping("/{characterId}/rest/{restType}")
     public ResponseEntity<Void> characterRest(
             @PathVariable UUID roomId,
             @PathVariable UUID characterId,

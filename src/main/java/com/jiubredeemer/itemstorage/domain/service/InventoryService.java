@@ -113,15 +113,20 @@ public class InventoryService {
                 .orElseThrow();
         final InventoryItemDto inventoryItemDto = inventoryDto.getItems().stream().filter(item -> item.getId().equals(itemId)).findAny().orElseThrow();
         inventoryRepository.changeBonusAttackValue(itemId, value);
-        return  inventoryRepository.findInventoryByCharacterIdFull(roomId, characterId)
+        return inventoryRepository.findInventoryByCharacterIdFull(roomId, characterId)
                 .orElseThrow();
     }
+
     public InventoryDto addBonusDamage(UUID roomId, UUID characterId, UUID itemId, Long value) {
         final InventoryDto inventoryDto = inventoryRepository.findInventoryByCharacterIdFull(roomId, characterId)
                 .orElseThrow();
         final InventoryItemDto inventoryItemDto = inventoryDto.getItems().stream().filter(item -> item.getId().equals(itemId)).findAny().orElseThrow();
         inventoryRepository.changeBonusDamageValue(itemId, value);
-        return  inventoryRepository.findInventoryByCharacterIdFull(roomId, characterId)
+        return inventoryRepository.findInventoryByCharacterIdFull(roomId, characterId)
                 .orElseThrow();
+    }
+
+    public void deleteRoomLogical(UUID roomId) {
+        inventoryRepository.deleteLogicalByRoomId(roomId);
     }
 }

@@ -133,6 +133,11 @@ public class Items extends TableImpl<ItemsRecord> {
      */
     public final TableField<ItemsRecord, String> CREATOR = createField(DSL.name("creator"), SQLDataType.CLOB, this, "");
 
+    /**
+     * The column <code>itemstorage.items.description_eng</code>.
+     */
+    public final TableField<ItemsRecord, String> DESCRIPTION_ENG = createField(DSL.name("description_eng"), SQLDataType.CLOB, this, "");
+
     private Items(Name alias, Table<ItemsRecord> aliased) {
         this(alias, aliased, (Field<?>[]) null, null);
     }
