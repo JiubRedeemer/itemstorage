@@ -6,6 +6,7 @@ package com.jiubredeemer.itemstorage.dal.entity.tables.records;
 
 import com.jiubredeemer.itemstorage.dal.entity.tables.Inventory;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.jooq.Record1;
@@ -76,6 +77,20 @@ public class InventoryRecord extends UpdatableRecordImpl<InventoryRecord> {
         return (Long) get(3);
     }
 
+    /**
+     * Setter for <code>itemstorage.inventory.deleted_at</code>.
+     */
+    public void setDeletedAt(LocalDateTime value) {
+        set(4, value);
+    }
+
+    /**
+     * Getter for <code>itemstorage.inventory.deleted_at</code>.
+     */
+    public LocalDateTime getDeletedAt() {
+        return (LocalDateTime) get(4);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -99,13 +114,14 @@ public class InventoryRecord extends UpdatableRecordImpl<InventoryRecord> {
     /**
      * Create a detached, initialised InventoryRecord
      */
-    public InventoryRecord(UUID id, UUID roomId, UUID characterId, Long totalWeight) {
+    public InventoryRecord(UUID id, UUID roomId, UUID characterId, Long totalWeight, LocalDateTime deletedAt) {
         super(Inventory.INVENTORY);
 
         setId(id);
         setRoomId(roomId);
         setCharacterId(characterId);
         setTotalWeight(totalWeight);
+        setDeletedAt(deletedAt);
         resetChangedOnNotNull();
     }
 }

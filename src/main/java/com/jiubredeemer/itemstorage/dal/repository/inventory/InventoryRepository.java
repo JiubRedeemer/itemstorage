@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -106,8 +107,8 @@ public class InventoryRepository {
     }
 
     public void deleteItemFromInventory(UUID itemId) {
-        dsl.delete(INVENTORY_ITEM).where(INVENTORY_ITEM.ID.eq(itemId)).execute();
         dsl.delete(INVENTORY_ITEM_SKILL).where(INVENTORY_ITEM_SKILL.INVENTORY_ITEM_ID.eq(itemId)).execute();
+        dsl.delete(INVENTORY_ITEM).where(INVENTORY_ITEM.ID.eq(itemId)).execute();
     }
 
     public Optional<InventoryItemDto> changeItemCount(UUID itemId, Long count) {
@@ -217,9 +218,16 @@ public class InventoryRepository {
                 .where(INVENTORY_ITEM.ID.eq(itemId))
                 .execute();
     }
+
     public void changeBonusDamageValue(UUID itemId, Long value) {
         dsl.update(INVENTORY_ITEM).set(INVENTORY_ITEM.DAMAGE_BONUS_VALUE, value)
                 .where(INVENTORY_ITEM.ID.eq(itemId))
+                .execute();
+    }
+
+    public void deleteLogicalByRoomId(UUID roomId) {
+        dsl.update(INVENTORY).set(INVENTORY.DELETED_AT, LocalDateTime.now())
+                .where(INVENTORY.ROOM_ID.eq(roomId))
                 .execute();
     }
 }
