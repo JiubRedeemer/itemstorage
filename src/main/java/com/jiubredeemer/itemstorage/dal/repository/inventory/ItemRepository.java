@@ -1,6 +1,7 @@
 package com.jiubredeemer.itemstorage.dal.repository.inventory;
 
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.ItemSkillRecord;
+import com.jiubredeemer.itemstorage.domain.model.inventory.InventoryItemDto;
 import com.jiubredeemer.itemstorage.domain.model.item.ItemDto;
 import com.jiubredeemer.itemstorage.domain.model.item.ItemSkillDto;
 import lombok.RequiredArgsConstructor;
@@ -18,8 +19,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static com.jiubredeemer.itemstorage.dal.entity.Tables.ITEMS;
-import static com.jiubredeemer.itemstorage.dal.entity.Tables.ITEM_SKILL;
+import static com.jiubredeemer.itemstorage.dal.entity.Tables.*;
 
 @Slf4j
 @Repository
@@ -39,9 +39,7 @@ public class ItemRepository {
         Optional<ItemDto> itemDto = dsl.selectFrom(ITEMS)
                 .where(ITEMS.ID.eq(id))
                 .fetchOptionalInto(ItemDto.class);
-        itemDto.ifPresent(itemDtoPresent -> {
-            enrichSkills(Collections.singletonList(itemDtoPresent));
-        });
+        itemDto.ifPresent(itemDtoPresent -> enrichSkills(Collections.singletonList(itemDtoPresent)));
         return itemDto;
     }
 
@@ -152,13 +150,25 @@ public class ItemRepository {
 
     private void enrichSkills(List<ItemDto> itemDtos) {
         List<ItemSkillDto> skills = findSkillsForItems(itemDtos.stream().map(ItemDto::getId).collect(Collectors.toList()));
-        itemDtos.forEach(itemDto -> {
-            itemDto.setSkills(skills
-                    .stream()
-                    .filter(skillDto -> skillDto.getItemId().equals(itemDto.getId()))
-                    .collect(Collectors.toList()));
-        });
+        itemDtos.forEach(itemDto -> itemDto.setSkills(skills
+                .stream()
+                .filter(skillDto -> skillDto.getItemId().equals(itemDto.getId()))
+                .collect(Collectors.toList())));
     }
 
 
+    public void deleteById(UUID itemId) {
+        dsl.transaction(transaction -> {
+            List<InventoryItemDto> inventoryItemDtos =
+                    DSL.using(transaction).selectFrom(INVENTORY_ITEM)
+                            .where(INVENTORY_ITEM.ITEM_ID.eq(itemId))
+                            .fetchInto(InventoryItemDto.class);
+            DSL.using(transaction).delete(INVENTORY_ITEM_SKILL).where(INVENTORY_ITEM_SKILL.INVENTORY_ITEM_ID
+                            .in(inventoryItemDtos.stream().map(InventoryItemDto::getId).toList()))
+                    .execute();
+            DSL.using(transaction).deleteFrom(INVENTORY_ITEM).where(INVENTORY_ITEM.ITEM_ID.eq(itemId)).execute();
+            DSL.using(transaction).deleteFrom(ITEM_SKILL).where(ITEM_SKILL.ITEM_ID.eq(itemId)).execute();
+            DSL.using(transaction).deleteFrom(ITEMS).where(ITEMS.ID.eq(itemId)).execute();
+        });
+    }
 }

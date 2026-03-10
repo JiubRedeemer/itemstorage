@@ -37,4 +37,9 @@ public class ItemController {
     public ItemDto addItem(@RequestBody ItemDto itemDto, @PathVariable UUID roomId, @PathVariable UUID userId) {
         return itemService.addItem(roomId, userId, itemDto);
     }
+
+    @DeleteMapping("/{itemId}")
+    public void deleteItem(@PathVariable UUID itemId, @PathVariable UUID roomId, @PathVariable UUID userId) {
+        itemService.deleteItem(roomId, userId, itemId);
+    }
 }
