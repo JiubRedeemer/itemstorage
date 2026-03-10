@@ -3,7 +3,9 @@ package com.jiubredeemer.itemstorage.domain.service;
 import com.jiubredeemer.itemstorage.dal.repository.inventory.ItemRepository;
 import com.jiubredeemer.itemstorage.domain.model.item.ItemDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -31,10 +33,16 @@ public class ItemService {
         itemDto.setRoomId(roomId);
         itemDto.setCreatorId(userId);
         itemRepository.create(itemDto);
-        itemDto.getSkills().forEach(skill -> {
-            skill.setItemId(itemDto.getId());
-        });
+        itemDto.getSkills().forEach(skill -> skill.setItemId(itemDto.getId()));
         itemRepository.createSkills(itemDto.getSkills());
         return itemRepository.findById(itemDto.getId()).orElseThrow();
+    }
+
+    public void deleteItem(UUID roomId, UUID userId, UUID itemId) {
+        ItemDto item = itemRepository.findById(itemId).orElseThrow();
+        if(!userId.equals(item.getCreatorId())){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+        itemRepository.deleteById(itemId);
     }
 }
