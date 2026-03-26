@@ -33,6 +33,18 @@ public class ItemController {
                 searchItemParams.getLimit());
     }
 
+    @PostMapping("/search/owned")
+    public List<ItemDto> searchByNameRoomAndCommunityItemsOwnedUsers(@PathVariable UUID roomId,
+                                                           @PathVariable UUID userId,
+                                                           @RequestBody SearchItemParams searchItemParams) {
+        return itemService.searchByNameRoomAndCommunityItemsOwnedUsers(searchItemParams.getSearchQuery(),
+                roomId,
+                userId,
+                searchItemParams.getLastSeenCreatedAt(),
+                searchItemParams.getLastSeenId(),
+                searchItemParams.getLimit());
+    }
+
     @PutMapping()
     public ItemDto addItem(@RequestBody ItemDto itemDto, @PathVariable UUID roomId, @PathVariable UUID userId) {
         return itemService.addItem(roomId, userId, itemDto);

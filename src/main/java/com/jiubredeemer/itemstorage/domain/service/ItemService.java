@@ -1,5 +1,6 @@
 package com.jiubredeemer.itemstorage.domain.service;
 
+import com.jiubredeemer.itemstorage.dal.repository.inventory.InventoryRepository;
 import com.jiubredeemer.itemstorage.dal.repository.inventory.ItemRepository;
 import com.jiubredeemer.itemstorage.domain.model.item.ItemDto;
 import lombok.RequiredArgsConstructor;
@@ -7,7 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,6 +16,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ItemService {
     private final ItemRepository itemRepository;
+    private final InventoryRepository inventoryRepository;
 
     public List<ItemDto> fetchAllItems() {
         return itemRepository.findAll();
@@ -23,10 +25,18 @@ public class ItemService {
     public List<ItemDto> searchByNameRoomAndCommunityItems(String searchQuery,
                                                            UUID roomId,
                                                            UUID userId,
-                                                           LocalDateTime lastSeenCreatedAt,
+                                                           Timestamp lastSeenCreatedAt,
                                                            UUID lastSeenId,
                                                            int limit) {
         return itemRepository.searchByNameRoomAndCommunityItems(searchQuery, roomId, userId, lastSeenCreatedAt, lastSeenId, limit);
+    }
+    public List<ItemDto> searchByNameRoomAndCommunityItemsOwnedUsers(String searchQuery,
+                                                           UUID roomId,
+                                                           UUID userId,
+                                                           Timestamp lastSeenCreatedAt,
+                                                           UUID lastSeenId,
+                                                           int limit) {
+        return itemRepository.searchByNameRoomAndCommunityItemsOwnedByUser(searchQuery, roomId, userId, lastSeenCreatedAt, lastSeenId, limit);
     }
 
     public ItemDto addItem(UUID roomId, UUID userId, ItemDto itemDto) {
@@ -43,6 +53,7 @@ public class ItemService {
         if(!userId.equals(item.getCreatorId())){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
+        inventoryRepository.deleteItemFromInventoryByItemId(itemId);
         itemRepository.deleteById(itemId);
     }
 }
