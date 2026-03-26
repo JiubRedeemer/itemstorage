@@ -230,4 +230,14 @@ public class InventoryRepository {
                 .where(INVENTORY.ROOM_ID.eq(roomId))
                 .execute();
     }
+
+    public void deleteItemFromInventoryByItemId(UUID itemId) {
+        final List<InventoryItemDto> inventoryItemDto = dsl.selectFrom(INVENTORY_ITEM)
+                .where(INVENTORY_ITEM.ITEM_ID.eq(itemId))
+                .fetch()
+                .map(inventoryItemRecord -> inventoryItemRecord.into(InventoryItemDto.class));
+        List<UUID> idList = inventoryItemDto.stream().map(InventoryItemDto::getId).toList();
+        dsl.delete(INVENTORY_ITEM_SKILL).where(INVENTORY_ITEM_SKILL.INVENTORY_ITEM_ID.in(idList)).execute();
+        dsl.delete(INVENTORY_ITEM).where(INVENTORY_ITEM.ID.in(idList)).execute();
+    }
 }

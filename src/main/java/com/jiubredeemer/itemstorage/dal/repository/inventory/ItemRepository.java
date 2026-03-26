@@ -12,6 +12,7 @@ import org.jooq.impl.DSL;
 import org.springframework.stereotype.Repository;
 import tools.jackson.databind.ObjectMapper;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -55,7 +56,7 @@ public class ItemRepository {
             String searchQuery,
             UUID roomId,
             UUID userId,
-            LocalDateTime lastSeenCreatedAt,
+            Timestamp lastSeenCreatedAt,
             UUID lastSeenId,
             int limit
     ) {
@@ -76,13 +77,63 @@ public class ItemRepository {
         }
 
         if (userId != null) {
-            condition.and((ITEMS.CREATOR_ID.eq(userId).and(ITEMS.VISIBLE_FOR_PLAYERS.eq(false))).or(ITEMS.CREATOR_ID.isNull()));
+            condition = condition.and(
+                    (ITEMS.CREATOR_ID.eq(userId).and(ITEMS.VISIBLE_FOR_PLAYERS.eq(false)))
+                            .or(ITEMS.CREATOR_ID.isNull())
+            );
         }
 
         // Добавляем seek-пагинацию по created_at + id
         if (lastSeenCreatedAt != null && lastSeenId != null) {
             condition = condition.and(
-                    ITEMS.CREATED_AT.ge(lastSeenCreatedAt).and(ITEMS.ID.gt(lastSeenId))
+                    DSL.row(ITEMS.CREATED_AT, ITEMS.ID)
+                            .gt(DSL.row(lastSeenCreatedAt.toLocalDateTime(), lastSeenId))
+            );
+        }
+
+        final List<ItemDto> itemDtos = dsl.selectFrom(ITEMS)
+                .where(condition)
+                .orderBy(ITEMS.CREATED_AT.asc(), ITEMS.ID.asc())
+                .limit(limit)
+                .fetchInto(ItemDto.class);
+
+        enrichSkills(itemDtos);
+
+        return itemDtos;
+    }
+
+    public List<ItemDto> searchByNameRoomAndCommunityItemsOwnedByUser(
+            String searchQuery,
+            UUID roomId,
+            UUID userId,
+            Timestamp lastSeenCreatedAt,
+            UUID lastSeenId,
+            int limit
+    ) {
+        var condition = DSL.condition("1=1");
+
+        if (searchQuery != null && !searchQuery.isBlank()) {
+            var searchPattern = "%" + searchQuery + "%";
+            condition = condition.and(
+                    DSL.field("items.name ->> 'rus'", String.class).likeIgnoreCase(searchPattern)
+                            .or(DSL.field("items.name ->> 'eng'", String.class).likeIgnoreCase(searchPattern))
+            );
+        }
+
+        if (roomId != null) {
+            condition = condition.and(ITEMS.ROOM_ID.eq(roomId).or(ITEMS.ROOM_ID.isNull()));
+        } else {
+            condition = condition.and(ITEMS.ROOM_ID.isNull());
+        }
+
+        condition = condition.and(ITEMS.CREATOR_ID.eq(userId));
+
+
+        // Добавляем seek-пагинацию по created_at + id
+        if (lastSeenCreatedAt != null && lastSeenId != null) {
+            condition = condition.and(
+                    DSL.row(ITEMS.CREATED_AT, ITEMS.ID)
+                            .gt(DSL.row(lastSeenCreatedAt.toLocalDateTime(), lastSeenId))
             );
         }
 

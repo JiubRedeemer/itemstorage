@@ -1,14 +1,18 @@
 package com.jiubredeemer.itemstorage.domain.model.item;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 import java.util.UUID;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class SearchItemParams {
-    private final String searchQuery;
-    private final Integer limit;
-    private final LocalDateTime lastSeenCreatedAt;
-    private final UUID lastSeenId;
+    private String searchQuery;
+    private Integer limit;
+    private Timestamp lastSeenCreatedAt;
+    private UUID lastSeenId;
 }
