@@ -21,3 +21,6 @@ jooq:
     target:
       package-name: com.jiubredeemer.itemstorage.dal.entity
       directory: ./src/main/java
+itemstorage:
+  license-mode:
+    cc-by-4: false

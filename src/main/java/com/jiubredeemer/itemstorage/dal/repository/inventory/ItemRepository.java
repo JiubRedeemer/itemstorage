@@ -1,5 +1,6 @@
 package com.jiubredeemer.itemstorage.dal.repository.inventory;
 
+import com.jiubredeemer.itemstorage.dal.configuration.LicenseMode;
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.ItemSkillRecord;
 import com.jiubredeemer.itemstorage.domain.model.inventory.InventoryItemDto;
 import com.jiubredeemer.itemstorage.domain.model.item.ItemDto;
@@ -28,6 +29,7 @@ import static com.jiubredeemer.itemstorage.dal.entity.Tables.*;
 public class ItemRepository {
     private final DSLContext dsl;
     private final ObjectMapper objectMapper;
+    private final LicenseMode licenseMode;
 
     public List<ItemDto> findAll() {
         List<ItemDto> itemDtos = dsl.selectFrom(ITEMS)
@@ -71,15 +73,19 @@ public class ItemRepository {
         }
 
         if (roomId != null) {
-            condition = condition.and(ITEMS.ROOM_ID.eq(roomId).or(ITEMS.ROOM_ID.isNull()));
+            if (licenseMode.getCcBy4()) {
+                condition = condition.and(ITEMS.ROOM_ID.eq(roomId));
+            } else {
+                condition = condition.and(ITEMS.ROOM_ID.eq(roomId).or(ITEMS.ROOM_ID.isNull()));
+            }
         } else {
-            condition = condition.and(ITEMS.ROOM_ID.isNull());
+            condition = condition.and("1=0");
         }
 
         if (userId != null) {
             condition = condition.and(
                     (ITEMS.CREATOR_ID.eq(userId).and(ITEMS.VISIBLE_FOR_PLAYERS.eq(false)))
-                            .or(ITEMS.CREATOR_ID.isNull())
+                            .or(ITEMS.VISIBLE_FOR_PLAYERS.eq(true))
             );
         }
 
