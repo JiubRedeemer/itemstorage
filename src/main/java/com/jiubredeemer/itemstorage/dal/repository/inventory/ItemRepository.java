@@ -85,7 +85,7 @@ public class ItemRepository {
         if (userId != null) {
             condition = condition.and(
                     (ITEMS.CREATOR_ID.eq(userId).and(ITEMS.VISIBLE_FOR_PLAYERS.eq(false)))
-                            .or(ITEMS.VISIBLE_FOR_PLAYERS.eq(true))
+                            .or(ITEMS.VISIBLE_FOR_PLAYERS.eq(true).or(ITEMS.VISIBLE_FOR_PLAYERS.isNull()))
             );
         }
 
