@@ -191,7 +191,7 @@ public class ItemRepository {
             name = JSONB.valueOf(objectMapper.writeValueAsString(itemSkillDto.getName()));
 
             return new ItemSkillRecord(
-                    itemSkillDto.getId(),
+                    UUID.randomUUID(),
                     itemSkillDto.getItemId(),
                     name,
                     itemSkillDto.getCastTime(),
