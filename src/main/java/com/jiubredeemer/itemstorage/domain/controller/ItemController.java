@@ -30,7 +30,8 @@ public class ItemController {
                 userId,
                 searchItemParams.getLastSeenCreatedAt(),
                 searchItemParams.getLastSeenId(),
-                searchItemParams.getLimit());
+                searchItemParams.getLimit(),
+                searchItemParams.getRuleType());
     }
 
     @PostMapping("/search/owned")

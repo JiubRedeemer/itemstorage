@@ -9,7 +9,6 @@ import com.jiubredeemer.itemstorage.dal.entity.Itemstorage;
 import com.jiubredeemer.itemstorage.dal.entity.Keys;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Inventory.InventoryPath;
 import com.jiubredeemer.itemstorage.dal.entity.tables.InventoryItemSkill.InventoryItemSkillPath;
-import com.jiubredeemer.itemstorage.dal.entity.tables.Items.ItemsPath;
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.InventoryItemRecord;
 
 import java.util.Arrays;
@@ -175,7 +174,7 @@ public class InventoryItem extends TableImpl<InventoryItemRecord> {
 
     @Override
     public List<ForeignKey<InventoryItemRecord, ?>> getReferences() {
-        return Arrays.asList(Keys.INVENTORY_ITEM__FKINVENTORY_155964, Keys.INVENTORY_ITEM__FKINVENTORY_686023);
+        return Arrays.asList(Keys.INVENTORY_ITEM__FKINVENTORY_155964);
     }
 
     private transient InventoryPath _inventory;
@@ -189,18 +188,6 @@ public class InventoryItem extends TableImpl<InventoryItemRecord> {
             _inventory = new InventoryPath(this, Keys.INVENTORY_ITEM__FKINVENTORY_155964, null);
 
         return _inventory;
-    }
-
-    private transient ItemsPath _items;
-
-    /**
-     * Get the implicit join path to the <code>itemstorage.items</code> table.
-     */
-    public ItemsPath items() {
-        if (_items == null)
-            _items = new ItemsPath(this, Keys.INVENTORY_ITEM__FKINVENTORY_686023, null);
-
-        return _items;
     }
 
     private transient InventoryItemSkillPath _inventoryItemSkill;

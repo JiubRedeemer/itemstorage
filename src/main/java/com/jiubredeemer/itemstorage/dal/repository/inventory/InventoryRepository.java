@@ -129,11 +129,20 @@ public class InventoryRepository {
     }
 
     public List<InventoryItemDto> findEquippedItemsByType(UUID inventoryId, ItemTypeEnum type) {
-        return dsl.select(INVENTORY_ITEM)
-                .from(INVENTORY_ITEM.join(ITEMS).on(INVENTORY_ITEM.ITEM_ID.eq(ITEMS.ID)))
-                .where(INVENTORY_ITEM.INVENTORY_ID.eq(inventoryId)).and(INVENTORY_ITEM.IN_USE.eq(true)).and(ITEMS.TYPE.eq(type.name()))
-                .fetch()
-                .map(inventoryItemRecordRecord1 -> inventoryItemRecordRecord1.into(InventoryItemDto.class));
+        final List<InventoryItemDto> equippedItems = dsl.selectFrom(INVENTORY_ITEM)
+                .where(INVENTORY_ITEM.INVENTORY_ID.eq(inventoryId))
+                .and(INVENTORY_ITEM.IN_USE.eq(true))
+                .fetchInto(InventoryItemDto.class);
+        final Map<UUID, ItemDto> itemsMap = itemRepository.findByIds(
+                        equippedItems.stream().map(InventoryItemDto::getItemId).toList())
+                .stream()
+                .collect(Collectors.toMap(ItemDto::getId, itemDto -> itemDto, (first, second) -> first));
+        return equippedItems.stream()
+                .filter(inventoryItemDto -> {
+                    ItemDto itemDto = itemsMap.get(inventoryItemDto.getItemId());
+                    return itemDto != null && type.equals(itemDto.getType());
+                })
+                .toList();
     }
 
     public InventoryItemDto addItemToInventory(UUID inventoryId, UUID itemId, Long count) {

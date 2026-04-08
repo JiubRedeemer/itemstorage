@@ -27,8 +27,8 @@ public class ItemService {
                                                            UUID userId,
                                                            Timestamp lastSeenCreatedAt,
                                                            UUID lastSeenId,
-                                                           int limit) {
-        return itemRepository.searchByNameRoomAndCommunityItems(searchQuery, roomId, userId, lastSeenCreatedAt, lastSeenId, limit);
+                                                           int limit, String ruleType) {
+        return itemRepository.searchByNameRoomAndCommunityItems(searchQuery, roomId, userId, lastSeenCreatedAt, lastSeenId, limit, ruleType);
     }
     public List<ItemDto> searchByNameRoomAndCommunityItemsOwnedUsers(String searchQuery,
                                                            UUID roomId,

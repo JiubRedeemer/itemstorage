@@ -7,12 +7,9 @@ package com.jiubredeemer.itemstorage.dal.entity.tables;
 import com.jiubredeemer.itemstorage.dal.entity.Itemstorage;
 import com.jiubredeemer.itemstorage.dal.entity.Keys;
 import com.jiubredeemer.itemstorage.dal.entity.tables.InventoryItemSkill.InventoryItemSkillPath;
-import com.jiubredeemer.itemstorage.dal.entity.tables.Items.ItemsPath;
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.ItemSkillRecord;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.UUID;
 
 import org.jooq.Condition;
@@ -179,23 +176,6 @@ public class ItemSkill extends TableImpl<ItemSkillRecord> {
     @Override
     public UniqueKey<ItemSkillRecord> getPrimaryKey() {
         return Keys.ITEM_SKILL_PKEY;
-    }
-
-    @Override
-    public List<ForeignKey<ItemSkillRecord, ?>> getReferences() {
-        return Arrays.asList(Keys.ITEM_SKILL__FKITEM_SKILL469967);
-    }
-
-    private transient ItemsPath _items;
-
-    /**
-     * Get the implicit join path to the <code>itemstorage.items</code> table.
-     */
-    public ItemsPath items() {
-        if (_items == null)
-            _items = new ItemsPath(this, Keys.ITEM_SKILL__FKITEM_SKILL469967, null);
-
-        return _items;
     }
 
     private transient InventoryItemSkillPath _inventoryItemSkill;

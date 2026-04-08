@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
+import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.springframework.stereotype.Repository;
 import tools.jackson.databind.ObjectMapper;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.jiubredeemer.itemstorage.dal.entity.Tables.*;
 
@@ -33,15 +35,26 @@ public class ItemRepository {
 
     public List<ItemDto> findAll() {
         List<ItemDto> itemDtos = dsl.selectFrom(ITEMS)
+                .where(ITEMS.CREATOR_ID.isNull())
                 .fetchInto(ItemDto.class);
         enrichSkills(itemDtos);
         return itemDtos;
     }
 
     public Optional<ItemDto> findById(UUID id) {
-        Optional<ItemDto> itemDto = dsl.selectFrom(ITEMS)
-                .where(ITEMS.ID.eq(id))
+        Optional<ItemDto> itemDto = dsl.selectFrom(ITEMS_USER)
+                .where(ITEMS_USER.ID.eq(id))
                 .fetchOptionalInto(ItemDto.class);
+        if (itemDto.isEmpty()) {
+            itemDto = dsl.selectFrom(ITEMS)
+                    .where(ITEMS.ID.eq(id))
+                    .fetchOptionalInto(ItemDto.class);
+        }
+        if (itemDto.isEmpty()) {
+            itemDto = dsl.selectFrom(ITEMS_24)
+                    .where(ITEMS_24.ID.eq(id))
+                    .fetchOptionalInto(ItemDto.class);
+        }
         itemDto.ifPresent(itemDtoPresent -> enrichSkills(Collections.singletonList(itemDtoPresent)));
         return itemDto;
     }
@@ -49,7 +62,15 @@ public class ItemRepository {
     public List<ItemDto> findByIds(List<UUID> ids) {
         List<ItemDto> itemDtos = dsl.selectFrom(ITEMS)
                 .where(ITEMS.ID.in(ids))
+                .and(ITEMS.CREATOR_ID.isNull())
                 .fetchInto(ItemDto.class);
+        itemDtos.addAll(dsl.selectFrom(ITEMS_24)
+                .where(ITEMS_24.ID.in(ids))
+                .and(ITEMS_24.CREATOR_ID.isNull())
+                .fetchInto(ItemDto.class));
+        itemDtos.addAll(dsl.selectFrom(ITEMS_USER)
+                .where(ITEMS_USER.ID.in(ids))
+                .fetchInto(ItemDto.class));
         enrichSkills(itemDtos);
         return itemDtos;
     }
@@ -60,48 +81,71 @@ public class ItemRepository {
             UUID userId,
             Timestamp lastSeenCreatedAt,
             UUID lastSeenId,
-            int limit
-    ) {
-        var condition = DSL.condition("1=1");
+            int limit,
+            String ruleType) {
+        Table<?> rulesItemsTable = getRulesItemsTable(ruleType);
+        String rulesItemsTableName = rulesItemsTable.getName();
+        var baseItemsCondition = DSL.field(rulesItemsTableName + ".creator_id").isNull();
+        var userItemsCondition = DSL.condition("1=1");
 
         if (searchQuery != null && !searchQuery.isBlank()) {
             var searchPattern = "%" + searchQuery + "%";
-            condition = condition.and(
-                    DSL.field("items.name ->> 'rus'", String.class).likeIgnoreCase(searchPattern)
-                            .or(DSL.field("items.name ->> 'eng'", String.class).likeIgnoreCase(searchPattern))
+            baseItemsCondition = baseItemsCondition.and(
+                    DSL.field(rulesItemsTableName + ".name ->> 'rus'", String.class).likeIgnoreCase(searchPattern)
+                            .or(DSL.field(rulesItemsTableName + ".name ->> 'eng'", String.class).likeIgnoreCase(searchPattern))
+            );
+            userItemsCondition = userItemsCondition.and(
+                    DSL.field("items_user.name ->> 'rus'", String.class).likeIgnoreCase(searchPattern)
+                            .or(DSL.field("items_user.name ->> 'eng'", String.class).likeIgnoreCase(searchPattern))
             );
         }
 
         if (roomId != null) {
             if (licenseMode.getCcBy4()) {
-                condition = condition.and(ITEMS.ROOM_ID.eq(roomId));
+                userItemsCondition = userItemsCondition.and(ITEMS_USER.ROOM_ID.eq(roomId));
             } else {
-                condition = condition.and(ITEMS.ROOM_ID.eq(roomId).or(ITEMS.ROOM_ID.isNull()));
+                userItemsCondition = userItemsCondition.and(ITEMS_USER.ROOM_ID.eq(roomId).or(ITEMS_USER.ROOM_ID.isNull()));
             }
         } else {
-            condition = condition.and("1=0");
+            userItemsCondition = userItemsCondition.and("1=0");
         }
 
         if (userId != null) {
-            condition = condition.and(
-                    (ITEMS.CREATOR_ID.eq(userId).and(ITEMS.VISIBLE_FOR_PLAYERS.eq(false)))
-                            .or(ITEMS.VISIBLE_FOR_PLAYERS.eq(true).or(ITEMS.VISIBLE_FOR_PLAYERS.isNull()))
+            userItemsCondition = userItemsCondition.and(
+                    (ITEMS_USER.CREATOR_ID.eq(userId).and(ITEMS_USER.VISIBLE_FOR_PLAYERS.eq(false)))
+                            .or(ITEMS_USER.VISIBLE_FOR_PLAYERS.eq(true).or(ITEMS_USER.VISIBLE_FOR_PLAYERS.isNull()))
             );
         }
 
         // Добавляем seek-пагинацию по created_at + id
         if (lastSeenCreatedAt != null && lastSeenId != null) {
-            condition = condition.and(
-                    DSL.row(ITEMS.CREATED_AT, ITEMS.ID)
+            baseItemsCondition = baseItemsCondition.and(
+                    DSL.row(DSL.field(rulesItemsTableName + ".created_at", LocalDateTime.class), DSL.field(rulesItemsTableName + ".id", UUID.class))
+                            .gt(DSL.row(lastSeenCreatedAt.toLocalDateTime(), lastSeenId))
+            );
+            userItemsCondition = userItemsCondition.and(
+                    DSL.row(ITEMS_USER.CREATED_AT, ITEMS_USER.ID)
                             .gt(DSL.row(lastSeenCreatedAt.toLocalDateTime(), lastSeenId))
             );
         }
 
-        final List<ItemDto> itemDtos = dsl.selectFrom(ITEMS)
-                .where(condition)
-                .orderBy(ITEMS.CREATED_AT.asc(), ITEMS.ID.asc())
+        final List<ItemDto> baseItems = dsl.selectFrom(rulesItemsTable)
+                .where(baseItemsCondition)
+                .orderBy(DSL.field(rulesItemsTableName + ".created_at").asc(), DSL.field(rulesItemsTableName + ".id").asc())
                 .limit(limit)
                 .fetchInto(ItemDto.class);
+        final List<ItemDto> userItems = dsl.selectFrom(ITEMS_USER)
+                .where(userItemsCondition)
+                .orderBy(ITEMS_USER.CREATED_AT.asc(), ITEMS_USER.ID.asc())
+                .limit(limit)
+                .fetchInto(ItemDto.class);
+        final List<ItemDto> itemDtos = Stream.concat(baseItems.stream(), userItems.stream())
+                .sorted((left, right) -> {
+                    int compareCreatedAt = left.getCreatedAt().compareTo(right.getCreatedAt());
+                    return compareCreatedAt != 0 ? compareCreatedAt : left.getId().compareTo(right.getId());
+                })
+                .limit(limit)
+                .toList();
 
         enrichSkills(itemDtos);
 
@@ -121,31 +165,31 @@ public class ItemRepository {
         if (searchQuery != null && !searchQuery.isBlank()) {
             var searchPattern = "%" + searchQuery + "%";
             condition = condition.and(
-                    DSL.field("items.name ->> 'rus'", String.class).likeIgnoreCase(searchPattern)
-                            .or(DSL.field("items.name ->> 'eng'", String.class).likeIgnoreCase(searchPattern))
+                    DSL.field("items_user.name ->> 'rus'", String.class).likeIgnoreCase(searchPattern)
+                            .or(DSL.field("items_user.name ->> 'eng'", String.class).likeIgnoreCase(searchPattern))
             );
         }
 
         if (roomId != null) {
-            condition = condition.and(ITEMS.ROOM_ID.eq(roomId).or(ITEMS.ROOM_ID.isNull()));
+            condition = condition.and(ITEMS_USER.ROOM_ID.eq(roomId).or(ITEMS_USER.ROOM_ID.isNull()));
         } else {
-            condition = condition.and(ITEMS.ROOM_ID.isNull());
+            condition = condition.and(ITEMS_USER.ROOM_ID.isNull());
         }
 
-        condition = condition.and(ITEMS.CREATOR_ID.eq(userId));
+        condition = condition.and(ITEMS_USER.CREATOR_ID.eq(userId));
 
 
         // Добавляем seek-пагинацию по created_at + id
         if (lastSeenCreatedAt != null && lastSeenId != null) {
             condition = condition.and(
-                    DSL.row(ITEMS.CREATED_AT, ITEMS.ID)
+                    DSL.row(ITEMS_USER.CREATED_AT, ITEMS_USER.ID)
                             .gt(DSL.row(lastSeenCreatedAt.toLocalDateTime(), lastSeenId))
             );
         }
 
-        final List<ItemDto> itemDtos = dsl.selectFrom(ITEMS)
+        final List<ItemDto> itemDtos = dsl.selectFrom(ITEMS_USER)
                 .where(condition)
-                .orderBy(ITEMS.CREATED_AT.asc(), ITEMS.ID.asc())
+                .orderBy(ITEMS_USER.CREATED_AT.asc(), ITEMS_USER.ID.asc())
                 .limit(limit)
                 .fetchInto(ItemDto.class);
 
@@ -167,21 +211,21 @@ public class ItemRepository {
     }
 
     public void create(ItemDto itemDto) {
-        dsl.insertInto(ITEMS)
-                .set(ITEMS.ID, itemDto.getId())
-                .set(ITEMS.ROOM_ID, itemDto.getRoomId())
-                .set(ITEMS.CREATOR_ID, itemDto.getCreatorId())
-                .set(ITEMS.CREATED_AT, LocalDateTime.now())
-                .set(ITEMS.VISIBLE_FOR_PLAYERS, itemDto.getVisibleForPlayers())
-                .set(ITEMS.CREATOR, itemDto.getCreator())
-                .set(ITEMS.CUSTOMIZATION, itemDto.getCustomization())
-                .set(ITEMS.DESCRIPTION, itemDto.getDescription())
-                .set(ITEMS.IMG_URL, itemDto.getImgUrl())
-                .set(ITEMS.NAME, JSONB.valueOf(objectMapper.writeValueAsString(itemDto.getName())))
-                .set(ITEMS.TYPE, itemDto.getType().name())
-                .set(ITEMS.SUBTYPE, itemDto.getSubtype() != null ? itemDto.getSubtype().name() : null)
-                .set(ITEMS.STATS, JSONB.valueOf(objectMapper.writeValueAsString(itemDto.getStats())))
-                .set(ITEMS.RARITY, itemDto.getRarity().name())
+        dsl.insertInto(ITEMS_USER)
+                .set(ITEMS_USER.ID, itemDto.getId())
+                .set(ITEMS_USER.ROOM_ID, itemDto.getRoomId())
+                .set(ITEMS_USER.CREATOR_ID, itemDto.getCreatorId())
+                .set(ITEMS_USER.CREATED_AT, LocalDateTime.now())
+                .set(ITEMS_USER.VISIBLE_FOR_PLAYERS, itemDto.getVisibleForPlayers())
+                .set(ITEMS_USER.CREATOR, itemDto.getCreator())
+                .set(ITEMS_USER.CUSTOMIZATION, itemDto.getCustomization())
+                .set(ITEMS_USER.DESCRIPTION, itemDto.getDescription())
+                .set(ITEMS_USER.IMG_URL, itemDto.getImgUrl())
+                .set(ITEMS_USER.NAME, JSONB.valueOf(objectMapper.writeValueAsString(itemDto.getName())))
+                .set(ITEMS_USER.TYPE, itemDto.getType().name())
+                .set(ITEMS_USER.SUBTYPE, itemDto.getSubtype() != null ? itemDto.getSubtype().name() : null)
+                .set(ITEMS_USER.STATS, JSONB.valueOf(objectMapper.writeValueAsString(itemDto.getStats())))
+                .set(ITEMS_USER.RARITY, itemDto.getRarity().name())
                 .execute();
     }
 
@@ -225,7 +269,60 @@ public class ItemRepository {
                     .execute();
             DSL.using(transaction).deleteFrom(INVENTORY_ITEM).where(INVENTORY_ITEM.ITEM_ID.eq(itemId)).execute();
             DSL.using(transaction).deleteFrom(ITEM_SKILL).where(ITEM_SKILL.ITEM_ID.eq(itemId)).execute();
-            DSL.using(transaction).deleteFrom(ITEMS).where(ITEMS.ID.eq(itemId)).execute();
+            DSL.using(transaction).deleteFrom(ITEMS_USER).where(ITEMS_USER.ID.eq(itemId)).execute();
         });
+    }
+
+    public void migrateLegacyCreatorItemsToItemsUser() {
+        dsl.transaction(transaction -> {
+            DSLContext tx = DSL.using(transaction);
+            tx.execute("ALTER TABLE IF EXISTS inventory_item DROP CONSTRAINT IF EXISTS fkinventory_686023");
+            tx.execute("ALTER TABLE IF EXISTS item_skill DROP CONSTRAINT IF EXISTS fkitem_skill469967");
+            tx.execute("ALTER TABLE IF EXISTS item_stats DROP CONSTRAINT IF EXISTS item_stats_items_fk");
+            tx.insertInto(ITEMS_USER,
+                            ITEMS_USER.ID,
+                            ITEMS_USER.NAME,
+                            ITEMS_USER.TYPE,
+                            ITEMS_USER.SUBTYPE,
+                            ITEMS_USER.CUSTOMIZATION,
+                            ITEMS_USER.RARITY,
+                            ITEMS_USER.DESCRIPTION,
+                            ITEMS_USER.STATS,
+                            ITEMS_USER.CREATED_AT,
+                            ITEMS_USER.ROOM_ID,
+                            ITEMS_USER.CREATOR_ID,
+                            ITEMS_USER.IMG_URL,
+                            ITEMS_USER.VISIBLE_FOR_PLAYERS,
+                            ITEMS_USER.CREATOR,
+                            ITEMS_USER.DESCRIPTION_ENG)
+                    .select(tx.select(
+                                    ITEMS.ID,
+                                    ITEMS.NAME,
+                                    ITEMS.TYPE,
+                                    ITEMS.SUBTYPE,
+                                    ITEMS.CUSTOMIZATION,
+                                    ITEMS.RARITY,
+                                    ITEMS.DESCRIPTION,
+                                    ITEMS.STATS,
+                                    ITEMS.CREATED_AT,
+                                    ITEMS.ROOM_ID,
+                                    ITEMS.CREATOR_ID,
+                                    ITEMS.IMG_URL,
+                                    ITEMS.VISIBLE_FOR_PLAYERS,
+                                    ITEMS.CREATOR,
+                                    ITEMS.DESCRIPTION_ENG)
+                            .from(ITEMS)
+                            .where(ITEMS.CREATOR_ID.isNotNull())
+                            .and(ITEMS.ID.notIn(tx.select(ITEMS_USER.ID).from(ITEMS_USER))))
+                    .execute();
+            tx.deleteFrom(ITEMS).where(ITEMS.CREATOR_ID.isNotNull()).execute();
+        });
+    }
+
+    private Table<?> getRulesItemsTable(String ruleType) {
+        if (ruleType != null && (ruleType.contains("24") || "2024".equalsIgnoreCase(ruleType))) {
+            return ITEMS_24;
+        }
+        return ITEMS;
     }
 }

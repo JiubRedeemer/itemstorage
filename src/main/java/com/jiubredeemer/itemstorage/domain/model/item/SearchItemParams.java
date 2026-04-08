@@ -15,4 +15,5 @@ public class SearchItemParams {
     private Integer limit;
     private Timestamp lastSeenCreatedAt;
     private UUID lastSeenId;
+    private String ruleType; //2024, 2014
 }

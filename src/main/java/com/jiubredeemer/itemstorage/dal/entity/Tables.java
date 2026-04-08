@@ -10,6 +10,8 @@ import com.jiubredeemer.itemstorage.dal.entity.tables.InventoryItemSkill;
 import com.jiubredeemer.itemstorage.dal.entity.tables.ItemSkill;
 import com.jiubredeemer.itemstorage.dal.entity.tables.ItemStats;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Items;
+import com.jiubredeemer.itemstorage.dal.entity.tables.ItemsUser;
+import com.jiubredeemer.itemstorage.dal.entity.tables.Items_24;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Money;
 
 
@@ -48,6 +50,16 @@ public class Tables {
      * The table <code>itemstorage.items</code>.
      */
     public static final Items ITEMS = Items.ITEMS;
+
+    /**
+     * The table <code>itemstorage.items_24</code>.
+     */
+    public static final Items_24 ITEMS_24 = Items_24.ITEMS_24;
+
+    /**
+     * The table <code>itemstorage.items_user</code>.
+     */
+    public static final ItemsUser ITEMS_USER = ItemsUser.ITEMS_USER;
 
     /**
      * The table <code>itemstorage.money</code>.
