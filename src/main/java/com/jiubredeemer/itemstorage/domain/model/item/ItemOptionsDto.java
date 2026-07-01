@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -20,5 +21,9 @@ public class ItemOptionsDto {
     private String armorClass;
     private String armorClassMaxDexterityBonus;
     private String requirement;
+    /** Tag names for display (populated on read) */
     private List<String> tags;
+    /** Tag UUIDs for create/edit relations (accepted on write, not persisted in JSON) */
+    private List<UUID> tagIds;
+    private String stealthDisadvantage;
 }

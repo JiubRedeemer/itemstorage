@@ -9,6 +9,8 @@ import com.jiubredeemer.itemstorage.dal.entity.tables.InventoryItem;
 import com.jiubredeemer.itemstorage.dal.entity.tables.InventoryItemSkill;
 import com.jiubredeemer.itemstorage.dal.entity.tables.ItemSkill;
 import com.jiubredeemer.itemstorage.dal.entity.tables.ItemStats;
+import com.jiubredeemer.itemstorage.dal.entity.tables.ItemTag;
+import com.jiubredeemer.itemstorage.dal.entity.tables.ItemTagRelation;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Items;
 import com.jiubredeemer.itemstorage.dal.entity.tables.ItemsUser;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Items_24;
@@ -45,6 +47,16 @@ public class Tables {
      * The table <code>itemstorage.item_stats</code>.
      */
     public static final ItemStats ITEM_STATS = ItemStats.ITEM_STATS;
+
+    /**
+     * The table <code>itemstorage.item_tag</code>.
+     */
+    public static final ItemTag ITEM_TAG = ItemTag.ITEM_TAG;
+
+    /**
+     * The table <code>itemstorage.item_tag_relation</code>.
+     */
+    public static final ItemTagRelation ITEM_TAG_RELATION = ItemTagRelation.ITEM_TAG_RELATION;
 
     /**
      * The table <code>itemstorage.items</code>.

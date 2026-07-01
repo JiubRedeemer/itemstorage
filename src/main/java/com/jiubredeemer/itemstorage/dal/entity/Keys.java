@@ -9,6 +9,8 @@ import com.jiubredeemer.itemstorage.dal.entity.tables.InventoryItem;
 import com.jiubredeemer.itemstorage.dal.entity.tables.InventoryItemSkill;
 import com.jiubredeemer.itemstorage.dal.entity.tables.ItemSkill;
 import com.jiubredeemer.itemstorage.dal.entity.tables.ItemStats;
+import com.jiubredeemer.itemstorage.dal.entity.tables.ItemTag;
+import com.jiubredeemer.itemstorage.dal.entity.tables.ItemTagRelation;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Items;
 import com.jiubredeemer.itemstorage.dal.entity.tables.ItemsUser;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Items_24;
@@ -18,6 +20,8 @@ import com.jiubredeemer.itemstorage.dal.entity.tables.records.InventoryItemSkill
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.InventoryRecord;
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.ItemSkillRecord;
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.ItemStatsRecord;
+import com.jiubredeemer.itemstorage.dal.entity.tables.records.ItemTagRecord;
+import com.jiubredeemer.itemstorage.dal.entity.tables.records.ItemTagRelationRecord;
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.ItemsRecord;
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.ItemsUserRecord;
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.Items_24Record;
@@ -46,6 +50,9 @@ public class Keys {
     public static final UniqueKey<InventoryItemSkillRecord> INVENTORY_ITEM_SKILL_PKEY = Internal.createUniqueKey(InventoryItemSkill.INVENTORY_ITEM_SKILL, DSL.name("inventory_item_skill_pkey"), new TableField[] { InventoryItemSkill.INVENTORY_ITEM_SKILL.ID }, true);
     public static final UniqueKey<ItemSkillRecord> ITEM_SKILL_PKEY = Internal.createUniqueKey(ItemSkill.ITEM_SKILL, DSL.name("item_skill_pkey"), new TableField[] { ItemSkill.ITEM_SKILL.ID }, true);
     public static final UniqueKey<ItemStatsRecord> ITEM_STATS_PK = Internal.createUniqueKey(ItemStats.ITEM_STATS, DSL.name("item_stats_pk"), new TableField[] { ItemStats.ITEM_STATS.ID }, true);
+    public static final UniqueKey<ItemTagRecord> PK_ITEM_TAG = Internal.createUniqueKey(ItemTag.ITEM_TAG, DSL.name("pk_item_tag"), new TableField[] { ItemTag.ITEM_TAG.ID }, true);
+    public static final UniqueKey<ItemTagRecord> UQ_ITEM_TAG_NAME_ROOM = Internal.createUniqueKey(ItemTag.ITEM_TAG, DSL.name("uq_item_tag_name_room"), new TableField[] { ItemTag.ITEM_TAG.NAME, ItemTag.ITEM_TAG.ROOM_ID }, true);
+    public static final UniqueKey<ItemTagRelationRecord> PK_ITEM_TAG_RELATION = Internal.createUniqueKey(ItemTagRelation.ITEM_TAG_RELATION, DSL.name("pk_item_tag_relation"), new TableField[] { ItemTagRelation.ITEM_TAG_RELATION.ITEM_ID, ItemTagRelation.ITEM_TAG_RELATION.TAG_ID }, true);
     public static final UniqueKey<ItemsRecord> ITEMS_PKEY = Internal.createUniqueKey(Items.ITEMS, DSL.name("items_pkey"), new TableField[] { Items.ITEMS.ID }, true);
     public static final UniqueKey<Items_24Record> ITEMS_24_PKEY = Internal.createUniqueKey(Items_24.ITEMS_24, DSL.name("items_24_pkey"), new TableField[] { Items_24.ITEMS_24.ID }, true);
     public static final UniqueKey<ItemsUserRecord> ITEMS_USER_PKEY = Internal.createUniqueKey(ItemsUser.ITEMS_USER, DSL.name("items_user_pkey"), new TableField[] { ItemsUser.ITEMS_USER.ID }, true);

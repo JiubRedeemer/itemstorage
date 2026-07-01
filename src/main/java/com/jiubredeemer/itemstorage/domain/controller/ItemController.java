@@ -1,12 +1,14 @@
 package com.jiubredeemer.itemstorage.domain.controller;
 
 import com.jiubredeemer.itemstorage.domain.model.item.ItemDto;
+import com.jiubredeemer.itemstorage.domain.model.item.ItemTagDto;
 import com.jiubredeemer.itemstorage.domain.model.item.SearchItemParams;
 import com.jiubredeemer.itemstorage.domain.service.ItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -31,7 +33,13 @@ public class ItemController {
                 searchItemParams.getLastSeenCreatedAt(),
                 searchItemParams.getLastSeenId(),
                 searchItemParams.getLimit(),
-                searchItemParams.getRuleType());
+                searchItemParams.getRuleType(),
+                searchItemParams.getType(),
+                searchItemParams.getSubtype(),
+                searchItemParams.getRarity(),
+                searchItemParams.getTags(),
+                searchItemParams.getCustomization(),
+                searchItemParams.getHasSkills());
     }
 
     @PostMapping("/search/owned")
@@ -43,7 +51,28 @@ public class ItemController {
                 userId,
                 searchItemParams.getLastSeenCreatedAt(),
                 searchItemParams.getLastSeenId(),
-                searchItemParams.getLimit());
+                searchItemParams.getLimit(),
+                searchItemParams.getType(),
+                searchItemParams.getSubtype(),
+                searchItemParams.getRarity(),
+                searchItemParams.getTags(),
+                searchItemParams.getCustomization(),
+                searchItemParams.getHasSkills());
+    }
+
+    @GetMapping("/tags")
+    public List<ItemTagDto> getTagsForRoom(@PathVariable UUID roomId) {
+        return itemService.getTagsForRoom(roomId);
+    }
+
+    @PostMapping("/tags")
+    public ItemTagDto createTag(@PathVariable UUID roomId, @RequestBody Map<String, String> body) {
+        return itemService.createTag(body.get("name"), roomId);
+    }
+
+    @PatchMapping("/tags/{tagId}")
+    public ItemTagDto updateTagDescription(@PathVariable UUID tagId, @RequestBody Map<String, String> body) {
+        return itemService.updateTagDescription(tagId, body.get("description"));
     }
 
     @PutMapping()

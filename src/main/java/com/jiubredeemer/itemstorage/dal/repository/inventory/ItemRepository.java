@@ -5,6 +5,7 @@ import com.jiubredeemer.itemstorage.dal.entity.tables.records.ItemSkillRecord;
 import com.jiubredeemer.itemstorage.domain.model.inventory.InventoryItemDto;
 import com.jiubredeemer.itemstorage.domain.model.item.ItemDto;
 import com.jiubredeemer.itemstorage.domain.model.item.ItemSkillDto;
+import com.jiubredeemer.itemstorage.domain.model.item.ItemTagDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
@@ -14,10 +15,10 @@ import org.jooq.impl.DSL;
 import org.springframework.stereotype.Repository;
 import tools.jackson.databind.ObjectMapper;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -32,6 +33,7 @@ public class ItemRepository {
     private final DSLContext dsl;
     private final ObjectMapper objectMapper;
     private final LicenseMode licenseMode;
+    private final ItemTagRepository itemTagRepository;
 
     public List<ItemDto> findAll() {
         List<ItemDto> itemDtos = dsl.selectFrom(ITEMS)
@@ -79,10 +81,16 @@ public class ItemRepository {
             String searchQuery,
             UUID roomId,
             UUID userId,
-            Timestamp lastSeenCreatedAt,
+            LocalDateTime lastSeenCreatedAt,
             UUID lastSeenId,
             int limit,
-            String ruleType) {
+            String ruleType,
+            String type,
+            String subtype,
+            String rarity,
+            List<String> tags,
+            Boolean customization,
+            Boolean hasSkills) {
         Table<?> rulesItemsTable = getRulesItemsTable(ruleType);
         String rulesItemsTableName = rulesItemsTable.getName();
         var baseItemsCondition = DSL.field(rulesItemsTableName + ".creator_id").isNull();
@@ -121,12 +129,71 @@ public class ItemRepository {
         if (lastSeenCreatedAt != null && lastSeenId != null) {
             baseItemsCondition = baseItemsCondition.and(
                     DSL.row(DSL.field(rulesItemsTableName + ".created_at", LocalDateTime.class), DSL.field(rulesItemsTableName + ".id", UUID.class))
-                            .gt(DSL.row(lastSeenCreatedAt.toLocalDateTime(), lastSeenId))
+                            .gt(DSL.row(lastSeenCreatedAt, lastSeenId))
             );
             userItemsCondition = userItemsCondition.and(
                     DSL.row(ITEMS_USER.CREATED_AT, ITEMS_USER.ID)
-                            .gt(DSL.row(lastSeenCreatedAt.toLocalDateTime(), lastSeenId))
+                            .gt(DSL.row(lastSeenCreatedAt, lastSeenId))
             );
+        }
+
+        // Фильтрация по type
+        if (type != null && !type.isBlank()) {
+            baseItemsCondition = baseItemsCondition.and(DSL.field(rulesItemsTableName + ".type", String.class).eq(type));
+            userItemsCondition = userItemsCondition.and(ITEMS_USER.TYPE.eq(type));
+        }
+
+        // Фильтрация по subtype
+        if (subtype != null && !subtype.isBlank()) {
+            baseItemsCondition = baseItemsCondition.and(DSL.field(rulesItemsTableName + ".subtype", String.class).eq(subtype));
+            userItemsCondition = userItemsCondition.and(ITEMS_USER.SUBTYPE.eq(subtype));
+        }
+
+        // Фильтрация по rarity
+        if (rarity != null && !rarity.isBlank()) {
+            baseItemsCondition = baseItemsCondition.and(DSL.field(rulesItemsTableName + ".rarity", String.class).eq(rarity));
+            userItemsCondition = userItemsCondition.and(ITEMS_USER.RARITY.eq(rarity));
+        }
+
+        // Фильтрация по customization
+        if (customization != null) {
+            baseItemsCondition = baseItemsCondition.and(DSL.field(rulesItemsTableName + ".customization", Boolean.class).eq(customization));
+            userItemsCondition = userItemsCondition.and(ITEMS_USER.CUSTOMIZATION.eq(customization));
+        }
+
+        // Фильтрация по hasSkills (AND: предмет должен иметь хотя бы один скилл)
+        if (hasSkills != null) {
+            var baseSkillsExists = DSL.exists(DSL.select(DSL.val(1)).from(ITEM_SKILL).where(ITEM_SKILL.ITEM_ID.eq(DSL.field(rulesItemsTableName + ".id", UUID.class))));
+            var userSkillsExists = DSL.exists(DSL.select(DSL.val(1)).from(ITEM_SKILL).where(ITEM_SKILL.ITEM_ID.eq(ITEMS_USER.ID)));
+            if (hasSkills) {
+                baseItemsCondition = baseItemsCondition.and(baseSkillsExists);
+                userItemsCondition = userItemsCondition.and(userSkillsExists);
+            } else {
+                baseItemsCondition = baseItemsCondition.and(DSL.notExists(DSL.select(DSL.val(1)).from(ITEM_SKILL).where(ITEM_SKILL.ITEM_ID.eq(DSL.field(rulesItemsTableName + ".id", UUID.class)))));
+                userItemsCondition = userItemsCondition.and(DSL.notExists(DSL.select(DSL.val(1)).from(ITEM_SKILL).where(ITEM_SKILL.ITEM_ID.eq(ITEMS_USER.ID))));
+            }
+        }
+
+        // Фильтрация по тегам (AND: предмет должен иметь ВСЕ теги)
+        if (tags != null && !tags.isEmpty()) {
+            for (String tag : tags) {
+                baseItemsCondition = baseItemsCondition.and(
+                        DSL.exists(DSL.select(DSL.val(1))
+                                .from(DSL.table("itemstorage.item_tag_relation").as("itr_f"))
+                                .join(DSL.table("itemstorage.item_tag").as("it_f"))
+                                .on(DSL.field("it_f.id").eq(DSL.field("itr_f.tag_id")))
+                                .where(DSL.field("itr_f.item_id").eq(DSL.field(rulesItemsTableName + ".id"))
+                                        .and(DSL.field("it_f.name", String.class).eq(tag))))
+                );
+                userItemsCondition = userItemsCondition.and(
+                        DSL.exists(DSL.select(DSL.val(1))
+                                .from(DSL.table("itemstorage.item_tag_relation").as("itr_f"))
+                                .join(DSL.table("itemstorage.item_tag").as("it_f"))
+                                .on(DSL.field("it_f.id").eq(DSL.field("itr_f.tag_id")))
+                                .where(DSL.field("itr_f.item_id").eq(ITEMS_USER.ID)
+                                        .and(DSL.field("it_f.name", String.class).eq(tag))))
+                );
+            }
         }
 
         final List<ItemDto> baseItems = dsl.selectFrom(rulesItemsTable)
@@ -156,9 +223,15 @@ public class ItemRepository {
             String searchQuery,
             UUID roomId,
             UUID userId,
-            Timestamp lastSeenCreatedAt,
+            LocalDateTime lastSeenCreatedAt,
             UUID lastSeenId,
-            int limit
+            int limit,
+            String type,
+            String subtype,
+            String rarity,
+            List<String> tags,
+            Boolean customization,
+            Boolean hasSkills
     ) {
         var condition = DSL.condition("1=1");
 
@@ -178,13 +251,56 @@ public class ItemRepository {
 
         condition = condition.and(ITEMS_USER.CREATOR_ID.eq(userId));
 
-
         // Добавляем seek-пагинацию по created_at + id
         if (lastSeenCreatedAt != null && lastSeenId != null) {
             condition = condition.and(
                     DSL.row(ITEMS_USER.CREATED_AT, ITEMS_USER.ID)
-                            .gt(DSL.row(lastSeenCreatedAt.toLocalDateTime(), lastSeenId))
+                            .gt(DSL.row(lastSeenCreatedAt, lastSeenId))
             );
+        }
+
+        // Фильтрация по type
+        if (type != null && !type.isBlank()) {
+            condition = condition.and(ITEMS_USER.TYPE.eq(type));
+        }
+
+        // Фильтрация по subtype
+        if (subtype != null && !subtype.isBlank()) {
+            condition = condition.and(ITEMS_USER.SUBTYPE.eq(subtype));
+        }
+
+        // Фильтрация по rarity
+        if (rarity != null && !rarity.isBlank()) {
+            condition = condition.and(ITEMS_USER.RARITY.eq(rarity));
+        }
+
+        // Фильтрация по customization
+        if (customization != null) {
+            condition = condition.and(ITEMS_USER.CUSTOMIZATION.eq(customization));
+        }
+
+        // Фильтрация по hasSkills
+        if (hasSkills != null) {
+            var skillsExists = DSL.exists(DSL.select(DSL.val(1)).from(ITEM_SKILL).where(ITEM_SKILL.ITEM_ID.eq(ITEMS_USER.ID)));
+            if (hasSkills) {
+                condition = condition.and(skillsExists);
+            } else {
+                condition = condition.and(DSL.notExists(DSL.select(DSL.val(1)).from(ITEM_SKILL).where(ITEM_SKILL.ITEM_ID.eq(ITEMS_USER.ID))));
+            }
+        }
+
+        // Фильтрация по тегам (AND: предмет должен иметь ВСЕ теги)
+        if (tags != null && !tags.isEmpty()) {
+            for (String tag : tags) {
+                condition = condition.and(
+                        DSL.exists(DSL.select(DSL.val(1))
+                                .from(DSL.table("itemstorage.item_tag_relation").as("itr_f"))
+                                .join(DSL.table("itemstorage.item_tag").as("it_f"))
+                                .on(DSL.field("it_f.id").eq(DSL.field("itr_f.tag_id")))
+                                .where(DSL.field("itr_f.item_id").eq(ITEMS_USER.ID)
+                                        .and(DSL.field("it_f.name", String.class).eq(tag))))
+                );
+            }
         }
 
         final List<ItemDto> itemDtos = dsl.selectFrom(ITEMS_USER)
@@ -196,6 +312,14 @@ public class ItemRepository {
         enrichSkills(itemDtos);
 
         return itemDtos;
+    }
+
+    public List<String> findDistinctTags() {
+        return dsl.selectDistinct(DSL.field("name", String.class))
+                .from(DSL.table("itemstorage.item_tag"))
+                .where(DSL.field("room_id").isNull())
+                .orderBy(DSL.field("name"))
+                .fetch(DSL.field("name", String.class));
     }
 
     public List<ItemSkillDto> findSkillsForItems(List<UUID> itemIds) {
@@ -211,6 +335,11 @@ public class ItemRepository {
     }
 
     public void create(ItemDto itemDto) {
+        List<UUID> tagIds = itemDto.getStats() != null ? itemDto.getStats().getTagIds() : null;
+        if (itemDto.getStats() != null) {
+            itemDto.getStats().setTags(null);
+            itemDto.getStats().setTagIds(null);
+        }
         dsl.insertInto(ITEMS_USER)
                 .set(ITEMS_USER.ID, itemDto.getId())
                 .set(ITEMS_USER.ROOM_ID, itemDto.getRoomId())
@@ -227,6 +356,7 @@ public class ItemRepository {
                 .set(ITEMS_USER.STATS, JSONB.valueOf(objectMapper.writeValueAsString(itemDto.getStats())))
                 .set(ITEMS_USER.RARITY, itemDto.getRarity().name())
                 .execute();
+        createTagRelations(itemDto.getId(), tagIds);
     }
 
     public void createSkills(List<ItemSkillDto> itemSkillDtos) {
@@ -255,6 +385,30 @@ public class ItemRepository {
                 .stream()
                 .filter(skillDto -> skillDto.getItemId().equals(itemDto.getId()))
                 .collect(Collectors.toList())));
+        enrichTags(itemDtos);
+    }
+
+    private void enrichTags(List<ItemDto> itemDtos) {
+        List<UUID> ids = itemDtos.stream().map(ItemDto::getId).collect(Collectors.toList());
+        if (ids.isEmpty()) return;
+        Map<UUID, List<ItemTagDto>> tagsByItemId = itemTagRepository.findDistinctByItemIds(ids);
+        itemDtos.forEach(dto -> {
+            if (dto.getStats() != null) {
+                List<ItemTagDto> tags = tagsByItemId.get(dto.getId());
+                if (tags != null && !tags.isEmpty()) {
+                    dto.getStats().setTags(tags.stream().map(ItemTagDto::getName).collect(Collectors.toList()));
+                    dto.getStats().setTagIds(tags.stream().map(ItemTagDto::getId).collect(Collectors.toList()));
+                } else {
+                    dto.getStats().setTags(null);
+                    dto.getStats().setTagIds(null);
+                }
+            }
+        });
+    }
+
+    public void createTagRelations(UUID itemId, List<UUID> tagIds) {
+        if (tagIds == null || tagIds.isEmpty()) return;
+        tagIds.forEach(tagId -> itemTagRepository.addTagRelation(itemId, tagId));
     }
 
 
@@ -269,6 +423,7 @@ public class ItemRepository {
                     .execute();
             DSL.using(transaction).deleteFrom(INVENTORY_ITEM).where(INVENTORY_ITEM.ITEM_ID.eq(itemId)).execute();
             DSL.using(transaction).deleteFrom(ITEM_SKILL).where(ITEM_SKILL.ITEM_ID.eq(itemId)).execute();
+            DSL.using(transaction).deleteFrom(DSL.table("itemstorage.item_tag_relation")).where(DSL.field("item_id", UUID.class).eq(itemId)).execute();
             DSL.using(transaction).deleteFrom(ITEMS_USER).where(ITEMS_USER.ID.eq(itemId)).execute();
         });
     }

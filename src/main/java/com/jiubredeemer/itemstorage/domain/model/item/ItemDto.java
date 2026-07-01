@@ -1,5 +1,6 @@
 package com.jiubredeemer.itemstorage.domain.model.item;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.jiubredeemer.itemstorage.domain.model.common.ItemSubTypeEnum;
 import com.jiubredeemer.itemstorage.domain.model.common.ItemTypeEnum;
 import com.jiubredeemer.itemstorage.domain.model.common.MultilingualField;
@@ -8,7 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,7 +26,8 @@ public class ItemDto {
     private String description;
     private ItemOptionsDto stats;
     private List<ItemSkillDto> skills;
-    private Timestamp createdAt;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
+    private LocalDateTime createdAt;
     private UUID roomId;
     private UUID creatorId;
     private String imgUrl;

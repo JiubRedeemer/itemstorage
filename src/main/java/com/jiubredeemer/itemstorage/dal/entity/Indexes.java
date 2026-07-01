@@ -7,6 +7,8 @@ package com.jiubredeemer.itemstorage.dal.entity;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Inventory;
 import com.jiubredeemer.itemstorage.dal.entity.tables.InventoryItem;
 import com.jiubredeemer.itemstorage.dal.entity.tables.ItemStats;
+import com.jiubredeemer.itemstorage.dal.entity.tables.ItemTag;
+import com.jiubredeemer.itemstorage.dal.entity.tables.ItemTagRelation;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Items;
 import com.jiubredeemer.itemstorage.dal.entity.tables.ItemsUser;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Items_24;
@@ -28,6 +30,8 @@ public class Indexes {
     // INDEX definitions
     // -------------------------------------------------------------------------
 
+    public static final Index IDX_ITEM_TAG_RELATION_TAG_ID = Internal.createIndex(DSL.name("idx_item_tag_relation_tag_id"), ItemTagRelation.ITEM_TAG_RELATION, new OrderField[] { ItemTagRelation.ITEM_TAG_RELATION.TAG_ID }, false);
+    public static final Index IDX_ITEM_TAG_ROOM_ID = Internal.createIndex(DSL.name("idx_item_tag_room_id"), ItemTag.ITEM_TAG, new OrderField[] { ItemTag.ITEM_TAG.ROOM_ID }, false);
     public static final Index IN_USE_IDX = Internal.createIndex(DSL.name("in_use_idx"), InventoryItem.INVENTORY_ITEM, new OrderField[] { InventoryItem.INVENTORY_ITEM.IN_USE }, false);
     public static final Index INVENTORY_CHARACTER_ID_IDX = Internal.createIndex(DSL.name("inventory_character_id_idx"), Inventory.INVENTORY, new OrderField[] { Inventory.INVENTORY.CHARACTER_ID }, false);
     public static final Index INVENTORY_ROOM_ID_IDX = Internal.createIndex(DSL.name("inventory_room_id_idx"), Inventory.INVENTORY, new OrderField[] { Inventory.INVENTORY.ROOM_ID }, false);

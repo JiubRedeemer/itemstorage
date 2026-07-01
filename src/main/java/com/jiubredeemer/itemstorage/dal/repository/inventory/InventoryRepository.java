@@ -199,8 +199,9 @@ public class InventoryRepository {
     }
 
     public InventoryItemSkillDto updateInventoryItemSkill(InventoryItemSkillDto inventoryItemSkillDto) {
-        dsl.update(INVENTORY_ITEM_SKILL).
-                set(INVENTORY_ITEM_SKILL.CURRENT_CHARGES, inventoryItemSkillDto.getCurrentCharges())
+        dsl.update(INVENTORY_ITEM_SKILL)
+                .set(INVENTORY_ITEM_SKILL.CURRENT_CHARGES, inventoryItemSkillDto.getCurrentCharges())
+                .where(INVENTORY_ITEM_SKILL.ID.eq(inventoryItemSkillDto.getId()))
                 .execute();
         return dsl.selectFrom(INVENTORY_ITEM_SKILL)
                 .where(INVENTORY_ITEM_SKILL.ID.eq(inventoryItemSkillDto.getId()))

@@ -9,6 +9,8 @@ import com.jiubredeemer.itemstorage.dal.entity.tables.InventoryItem;
 import com.jiubredeemer.itemstorage.dal.entity.tables.InventoryItemSkill;
 import com.jiubredeemer.itemstorage.dal.entity.tables.ItemSkill;
 import com.jiubredeemer.itemstorage.dal.entity.tables.ItemStats;
+import com.jiubredeemer.itemstorage.dal.entity.tables.ItemTag;
+import com.jiubredeemer.itemstorage.dal.entity.tables.ItemTagRelation;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Items;
 import com.jiubredeemer.itemstorage.dal.entity.tables.ItemsUser;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Items_24;
@@ -61,6 +63,16 @@ public class Itemstorage extends SchemaImpl {
     public final ItemStats ITEM_STATS = ItemStats.ITEM_STATS;
 
     /**
+     * The table <code>itemstorage.item_tag</code>.
+     */
+    public final ItemTag ITEM_TAG = ItemTag.ITEM_TAG;
+
+    /**
+     * The table <code>itemstorage.item_tag_relation</code>.
+     */
+    public final ItemTagRelation ITEM_TAG_RELATION = ItemTagRelation.ITEM_TAG_RELATION;
+
+    /**
      * The table <code>itemstorage.items</code>.
      */
     public final Items ITEMS = Items.ITEMS;
@@ -101,6 +113,8 @@ public class Itemstorage extends SchemaImpl {
             InventoryItemSkill.INVENTORY_ITEM_SKILL,
             ItemSkill.ITEM_SKILL,
             ItemStats.ITEM_STATS,
+            ItemTag.ITEM_TAG,
+            ItemTagRelation.ITEM_TAG_RELATION,
             Items.ITEMS,
             Items_24.ITEMS_24,
             ItemsUser.ITEMS_USER,
