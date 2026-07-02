@@ -12,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 
@@ -74,19 +75,34 @@ public class ItemService {
     }
 
     public ItemDto addItem(UUID roomId, UUID userId, ItemDto itemDto) {
-        itemDto.setRoomId(roomId);
-        itemDto.setCreatorId(userId);
-        itemRepository.create(itemDto);
-        itemDto.getSkills().forEach(skill -> skill.setItemId(itemDto.getId()));
-        itemRepository.createSkills(itemDto.getSkills());
+        Optional<ItemDto> existing = itemRepository.findById(itemDto.getId());
+        if (existing.isPresent()) {
+            itemDto.setCreatorId(existing.get().getCreatorId());
+            itemDto.setRoomId(existing.get().getRoomId());
+            itemRepository.update(itemDto);
+            itemRepository.deleteSkillsByItemId(itemDto.getId());
+        } else {
+            itemDto.setRoomId(roomId);
+            itemDto.setCreatorId(userId);
+            itemRepository.create(itemDto);
+        }
+        if (itemDto.getSkills() != null) {
+            itemDto.getSkills().forEach(skill -> skill.setItemId(itemDto.getId()));
+            itemRepository.createSkills(itemDto.getSkills());
+        }
         return itemRepository.findById(itemDto.getId()).orElseThrow();
     }
 
+    public ItemDto getItem(UUID itemId) {
+        return itemRepository.findById(itemId).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Item not found")
+        );
+    }
+
     public void deleteItem(UUID roomId, UUID userId, UUID itemId) {
-        ItemDto item = itemRepository.findById(itemId).orElseThrow();
-        if(!userId.equals(item.getCreatorId())){
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        }
+        itemRepository.findById(itemId).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Item not found")
+        );
         inventoryRepository.deleteItemFromInventoryByItemId(itemId);
         itemRepository.deleteById(itemId);
     }

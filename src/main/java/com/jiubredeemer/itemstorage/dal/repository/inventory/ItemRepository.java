@@ -406,6 +406,35 @@ public class ItemRepository {
         });
     }
 
+    public void update(ItemDto itemDto) {
+        List<UUID> tagIds = itemDto.getStats() != null ? itemDto.getStats().getTagIds() : null;
+        if (itemDto.getStats() != null) {
+            itemDto.getStats().setTags(null);
+            itemDto.getStats().setTagIds(null);
+        }
+        dsl.update(ITEMS_USER)
+                .set(ITEMS_USER.VISIBLE_FOR_PLAYERS, itemDto.getVisibleForPlayers())
+                .set(ITEMS_USER.CREATOR, itemDto.getCreator())
+                .set(ITEMS_USER.CUSTOMIZATION, itemDto.getCustomization())
+                .set(ITEMS_USER.DESCRIPTION, itemDto.getDescription())
+                .set(ITEMS_USER.IMG_URL, itemDto.getImgUrl())
+                .set(ITEMS_USER.NAME, JSONB.valueOf(objectMapper.writeValueAsString(itemDto.getName())))
+                .set(ITEMS_USER.TYPE, itemDto.getType().name())
+                .set(ITEMS_USER.SUBTYPE, itemDto.getSubtype() != null ? itemDto.getSubtype().name() : null)
+                .set(ITEMS_USER.STATS, JSONB.valueOf(objectMapper.writeValueAsString(itemDto.getStats())))
+                .set(ITEMS_USER.RARITY, itemDto.getRarity().name())
+                .where(ITEMS_USER.ID.eq(itemDto.getId()))
+                .execute();
+        itemTagRepository.deleteTagRelationsByItemId(itemDto.getId());
+        createTagRelations(itemDto.getId(), tagIds);
+    }
+
+    public void deleteSkillsByItemId(UUID itemId) {
+        dsl.deleteFrom(ITEM_SKILL)
+                .where(ITEM_SKILL.ITEM_ID.eq(itemId))
+                .execute();
+    }
+
     public void createTagRelations(UUID itemId, List<UUID> tagIds) {
         if (tagIds == null || tagIds.isEmpty()) return;
         tagIds.forEach(tagId -> itemTagRepository.addTagRelation(itemId, tagId));

@@ -75,6 +75,11 @@ public class ItemController {
         return itemService.updateTagDescription(tagId, body.get("description"));
     }
 
+    @GetMapping("/{itemId}")
+    public ItemDto getItem(@PathVariable UUID itemId) {
+        return itemService.getItem(itemId);
+    }
+
     @PutMapping()
     public ItemDto addItem(@RequestBody ItemDto itemDto, @PathVariable UUID roomId, @PathVariable UUID userId) {
         return itemService.addItem(roomId, userId, itemDto);
