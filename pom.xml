@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.jiubredeemer</groupId>
     <artifactId>itemstorage</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0</version>
     <name>itemstorage</name>
     <description>itemstorage</description>
     <properties>
