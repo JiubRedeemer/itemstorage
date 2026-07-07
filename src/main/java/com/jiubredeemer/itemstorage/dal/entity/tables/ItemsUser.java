@@ -7,6 +7,7 @@ package com.jiubredeemer.itemstorage.dal.entity.tables;
 import com.jiubredeemer.itemstorage.dal.entity.Indexes;
 import com.jiubredeemer.itemstorage.dal.entity.Itemstorage;
 import com.jiubredeemer.itemstorage.dal.entity.Keys;
+import com.jiubredeemer.itemstorage.dal.entity.tables.ItemsUser.ItemsUserPath;
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.ItemsUserRecord;
 
 import java.time.LocalDateTime;
@@ -17,11 +18,15 @@ import java.util.UUID;
 
 import org.jooq.Condition;
 import org.jooq.Field;
+import org.jooq.ForeignKey;
 import org.jooq.Index;
+import org.jooq.InverseForeignKey;
 import org.jooq.JSONB;
 import org.jooq.Name;
+import org.jooq.Path;
 import org.jooq.PlainSQL;
 import org.jooq.QueryPart;
+import org.jooq.Record;
 import org.jooq.SQL;
 import org.jooq.Schema;
 import org.jooq.Select;
@@ -131,6 +136,16 @@ public class ItemsUser extends TableImpl<ItemsUserRecord> {
      */
     public final TableField<ItemsUserRecord, String> DESCRIPTION_ENG = createField(DSL.name("description_eng"), SQLDataType.CLOB, this, "");
 
+    /**
+     * The column <code>itemstorage.items_user.hidden_stats</code>.
+     */
+    public final TableField<ItemsUserRecord, Boolean> HIDDEN_STATS = createField(DSL.name("hidden_stats"), SQLDataType.BOOLEAN.nullable(false).defaultValue(DSL.field(DSL.raw("false"), SQLDataType.BOOLEAN)), this, "");
+
+    /**
+     * The column <code>itemstorage.items_user.unidentified_item_id</code>.
+     */
+    public final TableField<ItemsUserRecord, UUID> UNIDENTIFIED_ITEM_ID = createField(DSL.name("unidentified_item_id"), SQLDataType.UUID, this, "");
+
     private ItemsUser(Name alias, Table<ItemsUserRecord> aliased) {
         this(alias, aliased, (Field<?>[]) null, null);
     }
@@ -160,6 +175,39 @@ public class ItemsUser extends TableImpl<ItemsUserRecord> {
         this(DSL.name("items_user"), null);
     }
 
+    public <O extends Record> ItemsUser(Table<O> path, ForeignKey<O, ItemsUserRecord> childPath, InverseForeignKey<O, ItemsUserRecord> parentPath) {
+        super(path, childPath, parentPath, ITEMS_USER);
+    }
+
+    /**
+     * A subtype implementing {@link Path} for simplified path-based joins.
+     */
+    public static class ItemsUserPath extends ItemsUser implements Path<ItemsUserRecord> {
+
+        private static final long serialVersionUID = 1L;
+        public <O extends Record> ItemsUserPath(Table<O> path, ForeignKey<O, ItemsUserRecord> childPath, InverseForeignKey<O, ItemsUserRecord> parentPath) {
+            super(path, childPath, parentPath);
+        }
+        private ItemsUserPath(Name alias, Table<ItemsUserRecord> aliased) {
+            super(alias, aliased);
+        }
+
+        @Override
+        public ItemsUserPath as(String alias) {
+            return new ItemsUserPath(DSL.name(alias), this);
+        }
+
+        @Override
+        public ItemsUserPath as(Name alias) {
+            return new ItemsUserPath(alias, this);
+        }
+
+        @Override
+        public ItemsUserPath as(Table<?> alias) {
+            return new ItemsUserPath(alias.getQualifiedName(), this);
+        }
+    }
+
     @Override
     public Schema getSchema() {
         return aliased() ? null : Itemstorage.ITEMSTORAGE;
@@ -173,6 +221,24 @@ public class ItemsUser extends TableImpl<ItemsUserRecord> {
     @Override
     public UniqueKey<ItemsUserRecord> getPrimaryKey() {
         return Keys.ITEMS_USER_PKEY;
+    }
+
+    @Override
+    public List<ForeignKey<ItemsUserRecord, ?>> getReferences() {
+        return Arrays.asList(Keys.ITEMS_USER__ITEMS_USER_UNIDENTIFIED_ITEM_ID_FKEY);
+    }
+
+    private transient ItemsUserPath _itemsUser;
+
+    /**
+     * Get the implicit join path to the <code>itemstorage.items_user</code>
+     * table.
+     */
+    public ItemsUserPath itemsUser() {
+        if (_itemsUser == null)
+            _itemsUser = new ItemsUserPath(this, Keys.ITEMS_USER__ITEMS_USER_UNIDENTIFIED_ITEM_ID_FKEY, null);
+
+        return _itemsUser;
     }
 
     @Override

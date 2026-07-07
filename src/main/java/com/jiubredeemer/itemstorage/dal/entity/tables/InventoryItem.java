@@ -95,6 +95,11 @@ public class InventoryItem extends TableImpl<InventoryItemRecord> {
      */
     public final TableField<InventoryItemRecord, Long> DAMAGE_BONUS_VALUE = createField(DSL.name("damage_bonus_value"), SQLDataType.BIGINT, this, "");
 
+    /**
+     * The column <code>itemstorage.inventory_item.identified</code>.
+     */
+    public final TableField<InventoryItemRecord, Boolean> IDENTIFIED = createField(DSL.name("identified"), SQLDataType.BOOLEAN.nullable(false).defaultValue(DSL.field(DSL.raw("true"), SQLDataType.BOOLEAN)), this, "");
+
     private InventoryItem(Name alias, Table<InventoryItemRecord> aliased) {
         this(alias, aliased, (Field<?>[]) null, null);
     }

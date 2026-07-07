@@ -118,6 +118,20 @@ public class InventoryItemRecord extends UpdatableRecordImpl<InventoryItemRecord
         return (Long) get(6);
     }
 
+    /**
+     * Setter for <code>itemstorage.inventory_item.identified</code>.
+     */
+    public void setIdentified(Boolean value) {
+        set(7, value);
+    }
+
+    /**
+     * Getter for <code>itemstorage.inventory_item.identified</code>.
+     */
+    public Boolean getIdentified() {
+        return (Boolean) get(7);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -141,7 +155,7 @@ public class InventoryItemRecord extends UpdatableRecordImpl<InventoryItemRecord
     /**
      * Create a detached, initialised InventoryItemRecord
      */
-    public InventoryItemRecord(UUID id, UUID inventoryId, UUID itemId, Long count, Boolean inUse, Long attackBonusValue, Long damageBonusValue) {
+    public InventoryItemRecord(UUID id, UUID inventoryId, UUID itemId, Long count, Boolean inUse, Long attackBonusValue, Long damageBonusValue, Boolean identified) {
         super(InventoryItem.INVENTORY_ITEM);
 
         setId(id);
@@ -151,6 +165,7 @@ public class InventoryItemRecord extends UpdatableRecordImpl<InventoryItemRecord
         setInUse(inUse);
         setAttackBonusValue(attackBonusValue);
         setDamageBonusValue(damageBonusValue);
+        setIdentified(identified);
         resetChangedOnNotNull();
     }
 }

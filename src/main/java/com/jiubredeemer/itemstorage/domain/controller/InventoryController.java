@@ -68,6 +68,11 @@ public class InventoryController {
         inventoryService.useSkill(roomId, characterId, itemId, skillId);
     }
 
+    @PatchMapping("/{characterId}/items/{itemId}/identify")
+    public InventoryDto identifyItem(@PathVariable UUID roomId, @PathVariable UUID characterId, @PathVariable UUID itemId) {
+        return inventoryService.identifyItem(roomId, characterId, itemId);
+    }
+
     @PostMapping("/{characterId}/rest/{restType}")
     public ResponseEntity<Void> characterRest(
             @PathVariable UUID roomId,

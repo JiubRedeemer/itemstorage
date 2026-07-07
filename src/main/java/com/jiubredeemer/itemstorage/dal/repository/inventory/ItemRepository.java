@@ -107,7 +107,13 @@ public class ItemRepository {
                             .or(DSL.field("items_user.name ->> 'eng'", String.class).likeIgnoreCase(searchPattern))
             );
         }
-
+        // Скрываем из поиска предметы-модели "до опознания" — их нельзя добавлять напрямую,
+        // они видны только через маскировку реального предмета
+        var unidentifiedModelCheck = ITEMS_USER.as("unidentified_model_check");
+        userItemsCondition = userItemsCondition.and(
+                DSL.notExists(DSL.select(DSL.val(1)).from(unidentifiedModelCheck)
+                        .where(unidentifiedModelCheck.UNIDENTIFIED_ITEM_ID.eq(ITEMS_USER.ID)))
+        );
         if (roomId != null) {
             if (licenseMode.getCcBy4()) {
                 userItemsCondition = userItemsCondition.and(ITEMS_USER.ROOM_ID.eq(roomId));
@@ -243,6 +249,13 @@ public class ItemRepository {
             );
         }
 
+        // Скрываем из поиска предметы-модели "до опознания" — их нельзя добавлять напрямую
+        var unidentifiedModelCheckOwned = ITEMS_USER.as("unidentified_model_check_owned");
+        condition = condition.and(
+                DSL.notExists(DSL.select(DSL.val(1)).from(unidentifiedModelCheckOwned)
+                        .where(unidentifiedModelCheckOwned.UNIDENTIFIED_ITEM_ID.eq(ITEMS_USER.ID)))
+        );
+
         if (roomId != null) {
             condition = condition.and(ITEMS_USER.ROOM_ID.eq(roomId).or(ITEMS_USER.ROOM_ID.isNull()));
         } else {
@@ -355,6 +368,8 @@ public class ItemRepository {
                 .set(ITEMS_USER.SUBTYPE, itemDto.getSubtype() != null ? itemDto.getSubtype().name() : null)
                 .set(ITEMS_USER.STATS, JSONB.valueOf(objectMapper.writeValueAsString(itemDto.getStats())))
                 .set(ITEMS_USER.RARITY, itemDto.getRarity().name())
+                .set(ITEMS_USER.HIDDEN_STATS, itemDto.getHiddenStats() != null && itemDto.getHiddenStats())
+                .set(ITEMS_USER.UNIDENTIFIED_ITEM_ID, itemDto.getUnidentifiedItemId())
                 .execute();
         createTagRelations(itemDto.getId(), tagIds);
     }
@@ -423,6 +438,8 @@ public class ItemRepository {
                 .set(ITEMS_USER.SUBTYPE, itemDto.getSubtype() != null ? itemDto.getSubtype().name() : null)
                 .set(ITEMS_USER.STATS, JSONB.valueOf(objectMapper.writeValueAsString(itemDto.getStats())))
                 .set(ITEMS_USER.RARITY, itemDto.getRarity().name())
+                .set(ITEMS_USER.HIDDEN_STATS, itemDto.getHiddenStats() != null && itemDto.getHiddenStats())
+                .set(ITEMS_USER.UNIDENTIFIED_ITEM_ID, itemDto.getUnidentifiedItemId())
                 .where(ITEMS_USER.ID.eq(itemDto.getId()))
                 .execute();
         itemTagRepository.deleteTagRelationsByItemId(itemDto.getId());

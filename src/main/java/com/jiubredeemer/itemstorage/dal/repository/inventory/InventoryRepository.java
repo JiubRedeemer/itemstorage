@@ -146,15 +146,24 @@ public class InventoryRepository {
     }
 
     public InventoryItemDto addItemToInventory(UUID inventoryId, UUID itemId, Long count) {
+        final ItemDto itemDto = itemRepository.findById(itemId).orElseThrow();
+        final boolean identified = itemDto.getUnidentifiedItemId() == null;
         UUID id = UUID.randomUUID();
-        dsl.insertInto(INVENTORY_ITEM, INVENTORY_ITEM.ID, INVENTORY_ITEM.INVENTORY_ID, INVENTORY_ITEM.ITEM_ID, INVENTORY_ITEM.COUNT, INVENTORY_ITEM.IN_USE)
-                .values(id, inventoryId, itemId, count, false)
+        dsl.insertInto(INVENTORY_ITEM, INVENTORY_ITEM.ID, INVENTORY_ITEM.INVENTORY_ID, INVENTORY_ITEM.ITEM_ID, INVENTORY_ITEM.COUNT, INVENTORY_ITEM.IN_USE, INVENTORY_ITEM.IDENTIFIED)
+                .values(id, inventoryId, itemId, count, false, identified)
                 .execute();
         return dsl.selectFrom(INVENTORY_ITEM)
                 .where(INVENTORY_ITEM.ID.eq(id))
                 .fetchOptional()
                 .map(inventoryItemRecord -> inventoryItemRecord.into(InventoryItemDto.class))
                 .orElseThrow();
+    }
+
+    public void identifyInventoryItem(UUID inventoryItemId) {
+        dsl.update(INVENTORY_ITEM)
+                .set(INVENTORY_ITEM.IDENTIFIED, true)
+                .where(INVENTORY_ITEM.ID.eq(inventoryItemId))
+                .execute();
     }
 
     public List<ItemStatsDto> getEquippedItemStats(UUID roomId, UUID characterId) {

@@ -33,4 +33,6 @@ public class ItemDto {
     private String imgUrl;
     private Boolean visibleForPlayers;
     private String creator;
+    private Boolean hiddenStats;
+    private UUID unidentifiedItemId;
 }

@@ -126,6 +126,18 @@ public class InventoryService {
                 .orElseThrow();
     }
 
+    public InventoryDto identifyItem(UUID roomId, UUID characterId, UUID inventoryItemId) {
+        final InventoryDto inventoryDto = inventoryRepository.findInventoryByCharacterIdFull(roomId, characterId)
+                .orElseThrow();
+        inventoryDto.getItems().stream()
+                .filter(item -> item.getId().equals(inventoryItemId))
+                .findAny()
+                .orElseThrow();
+        inventoryRepository.identifyInventoryItem(inventoryItemId);
+        return inventoryRepository.findInventoryByCharacterIdFull(roomId, characterId)
+                .orElseThrow();
+    }
+
     public void deleteRoomLogical(UUID roomId) {
         inventoryRepository.deleteLogicalByRoomId(roomId);
     }

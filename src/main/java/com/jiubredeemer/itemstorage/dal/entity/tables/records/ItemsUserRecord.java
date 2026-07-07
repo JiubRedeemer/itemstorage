@@ -232,6 +232,34 @@ public class ItemsUserRecord extends UpdatableRecordImpl<ItemsUserRecord> {
         return (String) get(14);
     }
 
+    /**
+     * Setter for <code>itemstorage.items_user.hidden_stats</code>.
+     */
+    public void setHiddenStats(Boolean value) {
+        set(15, value);
+    }
+
+    /**
+     * Getter for <code>itemstorage.items_user.hidden_stats</code>.
+     */
+    public Boolean getHiddenStats() {
+        return (Boolean) get(15);
+    }
+
+    /**
+     * Setter for <code>itemstorage.items_user.unidentified_item_id</code>.
+     */
+    public void setUnidentifiedItemId(UUID value) {
+        set(16, value);
+    }
+
+    /**
+     * Getter for <code>itemstorage.items_user.unidentified_item_id</code>.
+     */
+    public UUID getUnidentifiedItemId() {
+        return (UUID) get(16);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -255,7 +283,7 @@ public class ItemsUserRecord extends UpdatableRecordImpl<ItemsUserRecord> {
     /**
      * Create a detached, initialised ItemsUserRecord
      */
-    public ItemsUserRecord(UUID id, JSONB name, String type, String subtype, Boolean customization, String rarity, String description, JSONB stats, LocalDateTime createdAt, UUID roomId, UUID creatorId, String imgUrl, Boolean visibleForPlayers, String creator, String descriptionEng) {
+    public ItemsUserRecord(UUID id, JSONB name, String type, String subtype, Boolean customization, String rarity, String description, JSONB stats, LocalDateTime createdAt, UUID roomId, UUID creatorId, String imgUrl, Boolean visibleForPlayers, String creator, String descriptionEng, Boolean hiddenStats, UUID unidentifiedItemId) {
         super(ItemsUser.ITEMS_USER);
 
         setId(id);
@@ -273,6 +301,8 @@ public class ItemsUserRecord extends UpdatableRecordImpl<ItemsUserRecord> {
         setVisibleForPlayers(visibleForPlayers);
         setCreator(creator);
         setDescriptionEng(descriptionEng);
+        setHiddenStats(hiddenStats);
+        setUnidentifiedItemId(unidentifiedItemId);
         resetChangedOnNotNull();
     }
 }
