@@ -37,6 +37,7 @@ public class ItemRepository {
                 .where(ITEMS.CREATOR_ID.isNull())
                 .fetchInto(ItemDto.class);
         enrichSkills(itemDtos);
+        enrichBundles(itemDtos);
         return itemDtos;
     }
 
@@ -60,6 +61,7 @@ public class ItemRepository {
                     .fetchOptionalInto(ItemDto.class);
         }
         itemDto.ifPresent(itemDtoPresent -> enrichSkills(Collections.singletonList(itemDtoPresent)));
+        itemDto.ifPresent(itemDtoPresent -> enrichBundles(Collections.singletonList(itemDtoPresent)));
         return itemDto;
     }
 
@@ -288,6 +290,7 @@ public class ItemRepository {
         final List<ItemDto> itemDtos = merged.values().stream().limit(limit).toList();
 
         enrichSkills(itemDtos);
+        enrichBundles(itemDtos);
 
         return itemDtos;
     }
@@ -390,6 +393,7 @@ public class ItemRepository {
                 .fetchInto(ItemDto.class);
 
         enrichSkills(itemDtos);
+        enrichBundles(itemDtos);
 
         return itemDtos;
     }
@@ -561,6 +565,7 @@ public class ItemRepository {
                 .orderBy(ITEMS_USER.CREATED_AT.desc())
                 .fetchInto(ItemDto.class);
         enrichSkills(itemDtos);
+        enrichBundles(itemDtos);
         return itemDtos;
     }
 
@@ -605,6 +610,7 @@ public class ItemRepository {
                 .orderBy(ITEM_BUNDLED.CREATED_AT.asc())
                 .fetchInto(ItemDto.class);
         enrichSkills(itemDtos);
+        enrichBundles(itemDtos);
         return itemDtos;
     }
 
