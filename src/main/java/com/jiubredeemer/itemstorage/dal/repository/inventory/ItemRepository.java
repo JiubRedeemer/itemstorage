@@ -16,11 +16,7 @@ import org.springframework.stereotype.Repository;
 import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -48,6 +44,11 @@ public class ItemRepository {
                 .where(ITEMS_USER.ID.eq(id))
                 .fetchOptionalInto(ItemDto.class);
         if (itemDto.isEmpty()) {
+            itemDto = dsl.selectFrom(ITEM_BUNDLED)
+                    .where(ITEM_BUNDLED.ID.eq(id))
+                    .fetchOptionalInto(ItemDto.class);
+        }
+        if (itemDto.isEmpty()) {
             itemDto = dsl.selectFrom(ITEMS)
                     .where(ITEMS.ID.eq(id))
                     .fetchOptionalInto(ItemDto.class);
@@ -72,6 +73,9 @@ public class ItemRepository {
                 .fetchInto(ItemDto.class));
         itemDtos.addAll(dsl.selectFrom(ITEMS_USER)
                 .where(ITEMS_USER.ID.in(ids))
+                .fetchInto(ItemDto.class));
+        itemDtos.addAll(dsl.selectFrom(ITEM_BUNDLED)
+                .where(ITEM_BUNDLED.ID.in(ids))
                 .fetchInto(ItemDto.class));
         enrichSkills(itemDtos);
         return itemDtos;
@@ -202,23 +206,83 @@ public class ItemRepository {
             }
         }
 
-        final List<ItemDto> baseItems = dsl.selectFrom(rulesItemsTable)
-                .where(baseItemsCondition)
-                .orderBy(DSL.field(rulesItemsTableName + ".created_at").asc(), DSL.field(rulesItemsTableName + ".id").asc())
-                .limit(limit)
-                .fetchInto(ItemDto.class);
+        // Предметы из бандлов, включённых для этой комнаты (room_bundle -> item_bundled)
+        var bundledItemsCondition = DSL.condition("1=1");
+        if (searchQuery != null && !searchQuery.isBlank()) {
+            var searchPattern = "%" + searchQuery + "%";
+            bundledItemsCondition = bundledItemsCondition.and(
+                    DSL.field("item_bundled.name ->> 'rus'", String.class).likeIgnoreCase(searchPattern)
+                            .or(DSL.field("item_bundled.name ->> 'eng'", String.class).likeIgnoreCase(searchPattern))
+            );
+        }
+        if (roomId != null) {
+            bundledItemsCondition = bundledItemsCondition.and(
+                    DSL.exists(DSL.select(DSL.val(1))
+                            .from(ROOM_BUNDLE)
+                            .where(ROOM_BUNDLE.ROOM_ID.eq(roomId).and(ROOM_BUNDLE.ITEM_BUNDLE_ID.eq(ITEM_BUNDLED.ITEM_BUNDLE_ID))))
+            );
+        } else {
+            bundledItemsCondition = bundledItemsCondition.and(DSL.condition("1=0"));
+        }
+        if (lastSeenCreatedAt != null && lastSeenId != null) {
+            bundledItemsCondition = bundledItemsCondition.and(
+                    DSL.row(ITEM_BUNDLED.CREATED_AT, ITEM_BUNDLED.ID).gt(DSL.row(lastSeenCreatedAt, lastSeenId))
+            );
+        }
+        if (type != null && !type.isBlank()) {
+            bundledItemsCondition = bundledItemsCondition.and(ITEM_BUNDLED.TYPE.eq(type));
+        }
+        if (subtype != null && !subtype.isBlank()) {
+            bundledItemsCondition = bundledItemsCondition.and(ITEM_BUNDLED.SUBTYPE.eq(subtype));
+        }
+        if (rarity != null && !rarity.isBlank()) {
+            bundledItemsCondition = bundledItemsCondition.and(ITEM_BUNDLED.RARITY.eq(rarity));
+        }
+        if (customization != null) {
+            bundledItemsCondition = bundledItemsCondition.and(ITEM_BUNDLED.CUSTOMIZATION.eq(customization));
+        }
+        if (hasSkills != null) {
+            var bundledSkillsExists = DSL.exists(DSL.select(DSL.val(1)).from(ITEM_SKILL).where(ITEM_SKILL.ITEM_ID.eq(ITEM_BUNDLED.ID)));
+            bundledItemsCondition = hasSkills
+                    ? bundledItemsCondition.and(bundledSkillsExists)
+                    : bundledItemsCondition.and(DSL.notExists(DSL.select(DSL.val(1)).from(ITEM_SKILL).where(ITEM_SKILL.ITEM_ID.eq(ITEM_BUNDLED.ID))));
+        }
+        if (tags != null && !tags.isEmpty()) {
+            for (String tag : tags) {
+                bundledItemsCondition = bundledItemsCondition.and(
+                        DSL.exists(DSL.select(DSL.val(1))
+                                .from(DSL.table("itemstorage.item_tag_relation").as("itr_b"))
+                                .join(DSL.table("itemstorage.item_tag").as("it_b"))
+                                .on(DSL.field("it_b.id").eq(DSL.field("itr_b.tag_id")))
+                                .where(DSL.field("itr_b.item_id").eq(ITEM_BUNDLED.ID)
+                                        .and(DSL.field("it_b.name", String.class).eq(tag))))
+                );
+            }
+        }
+
+        List<ItemDto> baseItems = new ArrayList<>();
+//        final List<ItemDto> baseItems = dsl.selectFrom(rulesItemsTable)
+//                .where(baseItemsCondition)
+//                .orderBy(DSL.field(rulesItemsTableName + ".created_at").asc(), DSL.field(rulesItemsTableName + ".id").asc())
+//                .limit(limit)
+//                .fetchInto(ItemDto.class);
         final List<ItemDto> userItems = dsl.selectFrom(ITEMS_USER)
                 .where(userItemsCondition)
                 .orderBy(ITEMS_USER.CREATED_AT.asc(), ITEMS_USER.ID.asc())
                 .limit(limit)
                 .fetchInto(ItemDto.class);
-        final List<ItemDto> itemDtos = Stream.concat(baseItems.stream(), userItems.stream())
-                .sorted((left, right) -> {
-                    int compareCreatedAt = left.getCreatedAt().compareTo(right.getCreatedAt());
-                    return compareCreatedAt != 0 ? compareCreatedAt : left.getId().compareTo(right.getId());
-                })
+        final List<ItemDto> bundledItems = dsl.selectFrom(ITEM_BUNDLED)
+                .where(bundledItemsCondition)
+                .orderBy(ITEM_BUNDLED.CREATED_AT.asc(), ITEM_BUNDLED.ID.asc())
                 .limit(limit)
-                .toList();
+                .fetchInto(ItemDto.class);
+
+        // Дедуп по id: система бандл-2014/2024 может ссылаться на те же id, что уже есть в items/items_24
+        final Map<UUID, ItemDto> merged = new LinkedHashMap<>();
+        Stream.concat(Stream.concat(baseItems.stream(), userItems.stream()), bundledItems.stream())
+                .sorted(Comparator.comparing(ItemDto::getCreatedAt).thenComparing(ItemDto::getId))
+                .forEach(item -> merged.putIfAbsent(item.getId(), item));
+        final List<ItemDto> itemDtos = merged.values().stream().limit(limit).toList();
 
         enrichSkills(itemDtos);
 
@@ -457,6 +521,141 @@ public class ItemRepository {
         tagIds.forEach(tagId -> itemTagRepository.addTagRelation(itemId, tagId));
     }
 
+
+    /**
+     * Все предметы, созданные пользователем в любых комнатах (для импорта в бандл).
+     * Модели "до опознания" исключаются — они переносятся вместе с родительским предметом.
+     */
+    public List<ItemDto> findAllByCreatorId(UUID creatorId, String search) {
+        var condition = ITEMS_USER.CREATOR_ID.eq(creatorId);
+        var unidentifiedModelCheck = ITEMS_USER.as("unidentified_model_check_creator");
+        condition = condition.and(
+                DSL.notExists(DSL.select(DSL.val(1)).from(unidentifiedModelCheck)
+                        .where(unidentifiedModelCheck.UNIDENTIFIED_ITEM_ID.eq(ITEMS_USER.ID)))
+        );
+        if (search != null && !search.isBlank()) {
+            var searchPattern = "%" + search.trim() + "%";
+            condition = condition.and(
+                    DSL.field("items_user.name ->> 'rus'", String.class).likeIgnoreCase(searchPattern)
+                            .or(DSL.field("items_user.name ->> 'eng'", String.class).likeIgnoreCase(searchPattern))
+            );
+        }
+        List<ItemDto> itemDtos = dsl.selectFrom(ITEMS_USER)
+                .where(condition)
+                .orderBy(ITEMS_USER.CREATED_AT.desc())
+                .fetchInto(ItemDto.class);
+        enrichSkills(itemDtos);
+        return itemDtos;
+    }
+
+    /**
+     * Импортирует копии предметов (по их id) в бандл. Каждая копия получает новый id,
+     * копируются навыки и связи с глобальными тегами. Связанные модели "до опознания"
+     * также копируются и перелинковываются.
+     */
+    public void importItemsIntoBundle(UUID bundleId, List<UUID> itemIds, UUID userId) {
+        if (itemIds == null || itemIds.isEmpty()) return;
+        List<ItemDto> sources = findByIds(itemIds);
+        for (ItemDto source : sources) {
+            UUID newUnidentifiedId = null;
+            if (source.getUnidentifiedItemId() != null) {
+                Optional<ItemDto> unidentifiedSource = findById(source.getUnidentifiedItemId());
+                if (unidentifiedSource.isPresent()) {
+                    ItemDto unidentifiedCopy = unidentifiedSource.get();
+                    newUnidentifiedId = UUID.randomUUID();
+                    copyIntoBundle(bundleId, unidentifiedCopy, newUnidentifiedId, null, userId);
+                }
+            }
+            copyIntoBundle(bundleId, source, UUID.randomUUID(), newUnidentifiedId, userId);
+        }
+    }
+
+    private void copyIntoBundle(UUID bundleId, ItemDto source, UUID newId, UUID newUnidentifiedId, UUID userId) {
+        List<ItemSkillDto> skills = source.getSkills();
+        source.setId(newId);
+        source.setUnidentifiedItemId(newUnidentifiedId);
+        source.setCreatorId(userId);
+        // createBundledItem сам переносит tagIds из stats в item_tag_relation
+        createBundledItem(bundleId, source);
+        if (skills != null && !skills.isEmpty()) {
+            skills.forEach(skill -> skill.setItemId(newId));
+            createSkills(skills);
+        }
+    }
+
+    public List<ItemDto> findBundledItemsByBundleId(UUID bundleId) {
+        List<ItemDto> itemDtos = dsl.selectFrom(ITEM_BUNDLED)
+                .where(ITEM_BUNDLED.ITEM_BUNDLE_ID.eq(bundleId))
+                .orderBy(ITEM_BUNDLED.CREATED_AT.asc())
+                .fetchInto(ItemDto.class);
+        enrichSkills(itemDtos);
+        return itemDtos;
+    }
+
+    public void createBundledItem(UUID bundleId, ItemDto itemDto) {
+        List<UUID> tagIds = itemDto.getStats() != null ? itemDto.getStats().getTagIds() : null;
+        if (itemDto.getStats() != null) {
+            itemDto.getStats().setTags(null);
+            itemDto.getStats().setTagIds(null);
+        }
+        dsl.insertInto(ITEM_BUNDLED)
+                .set(ITEM_BUNDLED.ID, itemDto.getId())
+                .set(ITEM_BUNDLED.ITEM_BUNDLE_ID, bundleId)
+                .set(ITEM_BUNDLED.CREATOR_ID, itemDto.getCreatorId())
+                .set(ITEM_BUNDLED.CREATED_AT, LocalDateTime.now())
+                .set(ITEM_BUNDLED.VISIBLE_FOR_PLAYERS, itemDto.getVisibleForPlayers())
+                .set(ITEM_BUNDLED.CREATOR, itemDto.getCreator())
+                .set(ITEM_BUNDLED.CUSTOMIZATION, itemDto.getCustomization())
+                .set(ITEM_BUNDLED.DESCRIPTION, itemDto.getDescription())
+                .set(ITEM_BUNDLED.IMG_URL, itemDto.getImgUrl())
+                .set(ITEM_BUNDLED.NAME, JSONB.valueOf(objectMapper.writeValueAsString(itemDto.getName())))
+                .set(ITEM_BUNDLED.TYPE, itemDto.getType().name())
+                .set(ITEM_BUNDLED.SUBTYPE, itemDto.getSubtype() != null ? itemDto.getSubtype().name() : null)
+                .set(ITEM_BUNDLED.STATS, JSONB.valueOf(objectMapper.writeValueAsString(itemDto.getStats())))
+                .set(ITEM_BUNDLED.RARITY, itemDto.getRarity().name())
+                .set(ITEM_BUNDLED.HIDDEN_STATS, itemDto.getHiddenStats() != null && itemDto.getHiddenStats())
+                .set(ITEM_BUNDLED.UNIDENTIFIED_ITEM_ID, itemDto.getUnidentifiedItemId())
+                .execute();
+        createTagRelations(itemDto.getId(), tagIds);
+    }
+
+    public void updateBundledItem(ItemDto itemDto) {
+        List<UUID> tagIds = itemDto.getStats() != null ? itemDto.getStats().getTagIds() : null;
+        if (itemDto.getStats() != null) {
+            itemDto.getStats().setTags(null);
+            itemDto.getStats().setTagIds(null);
+        }
+        dsl.update(ITEM_BUNDLED)
+                .set(ITEM_BUNDLED.VISIBLE_FOR_PLAYERS, itemDto.getVisibleForPlayers())
+                .set(ITEM_BUNDLED.CREATOR, itemDto.getCreator())
+                .set(ITEM_BUNDLED.CUSTOMIZATION, itemDto.getCustomization())
+                .set(ITEM_BUNDLED.DESCRIPTION, itemDto.getDescription())
+                .set(ITEM_BUNDLED.IMG_URL, itemDto.getImgUrl())
+                .set(ITEM_BUNDLED.NAME, JSONB.valueOf(objectMapper.writeValueAsString(itemDto.getName())))
+                .set(ITEM_BUNDLED.TYPE, itemDto.getType().name())
+                .set(ITEM_BUNDLED.SUBTYPE, itemDto.getSubtype() != null ? itemDto.getSubtype().name() : null)
+                .set(ITEM_BUNDLED.STATS, JSONB.valueOf(objectMapper.writeValueAsString(itemDto.getStats())))
+                .set(ITEM_BUNDLED.RARITY, itemDto.getRarity().name())
+                .set(ITEM_BUNDLED.HIDDEN_STATS, itemDto.getHiddenStats() != null && itemDto.getHiddenStats())
+                .set(ITEM_BUNDLED.UNIDENTIFIED_ITEM_ID, itemDto.getUnidentifiedItemId())
+                .where(ITEM_BUNDLED.ID.eq(itemDto.getId()))
+                .execute();
+        itemTagRepository.deleteTagRelationsByItemId(itemDto.getId());
+        createTagRelations(itemDto.getId(), tagIds);
+    }
+
+    /**
+     * Удаляет предмет-заготовку из бандла вместе с его навыками и тегами.
+     * Не трогает inventory_item в комнатах, где этот предмет уже выдан игрокам —
+     * такие записи станут "осиротевшими" (ссылка на несуществующий item_id).
+     */
+    public void deleteBundledItemById(UUID itemId) {
+        dsl.transaction(transaction -> {
+            DSL.using(transaction).deleteFrom(ITEM_SKILL).where(ITEM_SKILL.ITEM_ID.eq(itemId)).execute();
+            DSL.using(transaction).deleteFrom(DSL.table("itemstorage.item_tag_relation")).where(DSL.field("item_id", UUID.class).eq(itemId)).execute();
+            DSL.using(transaction).deleteFrom(ITEM_BUNDLED).where(ITEM_BUNDLED.ID.eq(itemId)).execute();
+        });
+    }
 
     public void deleteById(UUID itemId) {
         dsl.transaction(transaction -> {

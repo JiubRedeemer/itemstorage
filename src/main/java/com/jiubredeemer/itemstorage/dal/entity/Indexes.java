@@ -4,6 +4,7 @@
 package com.jiubredeemer.itemstorage.dal.entity;
 
 
+import com.jiubredeemer.itemstorage.dal.entity.tables.BundlePurchase;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Inventory;
 import com.jiubredeemer.itemstorage.dal.entity.tables.InventoryItem;
 import com.jiubredeemer.itemstorage.dal.entity.tables.ItemStats;
@@ -13,6 +14,7 @@ import com.jiubredeemer.itemstorage.dal.entity.tables.Items;
 import com.jiubredeemer.itemstorage.dal.entity.tables.ItemsUser;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Items_24;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Money;
+import com.jiubredeemer.itemstorage.dal.entity.tables.RoomBundle;
 
 import org.jooq.Index;
 import org.jooq.OrderField;
@@ -30,6 +32,7 @@ public class Indexes {
     // INDEX definitions
     // -------------------------------------------------------------------------
 
+    public static final Index BUNDLE_PURCHASE_BUNDLE_IDX = Internal.createIndex(DSL.name("bundle_purchase_bundle_idx"), BundlePurchase.BUNDLE_PURCHASE, new OrderField[] { BundlePurchase.BUNDLE_PURCHASE.ITEM_BUNDLE_ID }, false);
     public static final Index IDX_ITEM_TAG_RELATION_TAG_ID = Internal.createIndex(DSL.name("idx_item_tag_relation_tag_id"), ItemTagRelation.ITEM_TAG_RELATION, new OrderField[] { ItemTagRelation.ITEM_TAG_RELATION.TAG_ID }, false);
     public static final Index IDX_ITEM_TAG_ROOM_ID = Internal.createIndex(DSL.name("idx_item_tag_room_id"), ItemTag.ITEM_TAG, new OrderField[] { ItemTag.ITEM_TAG.ROOM_ID }, false);
     public static final Index IN_USE_IDX = Internal.createIndex(DSL.name("in_use_idx"), InventoryItem.INVENTORY_ITEM, new OrderField[] { InventoryItem.INVENTORY_ITEM.IN_USE }, false);
@@ -40,4 +43,5 @@ public class Indexes {
     public static final Index ITEMS_TYPE_IDX = Internal.createIndex(DSL.name("items_type_idx"), Items.ITEMS, new OrderField[] { Items.ITEMS.TYPE }, false);
     public static final Index ITEMS_USER_TYPE_IDX = Internal.createIndex(DSL.name("items_user_type_idx"), ItemsUser.ITEMS_USER, new OrderField[] { ItemsUser.ITEMS_USER.TYPE }, false);
     public static final Index MONEY_INVENTORY_ID = Internal.createIndex(DSL.name("money_inventory_id"), Money.MONEY, new OrderField[] { Money.MONEY.INVENTORY_ID }, false);
+    public static final Index ROOM_BUNDLE_ROOM_ID = Internal.createIndex(DSL.name("room_bundle_room_id"), RoomBundle.ROOM_BUNDLE, new OrderField[] { RoomBundle.ROOM_BUNDLE.ROOM_ID }, false);
 }

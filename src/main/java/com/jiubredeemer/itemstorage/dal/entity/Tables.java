@@ -4,9 +4,12 @@
 package com.jiubredeemer.itemstorage.dal.entity;
 
 
+import com.jiubredeemer.itemstorage.dal.entity.tables.BundlePurchase;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Inventory;
 import com.jiubredeemer.itemstorage.dal.entity.tables.InventoryItem;
 import com.jiubredeemer.itemstorage.dal.entity.tables.InventoryItemSkill;
+import com.jiubredeemer.itemstorage.dal.entity.tables.ItemBundle;
+import com.jiubredeemer.itemstorage.dal.entity.tables.ItemBundled;
 import com.jiubredeemer.itemstorage.dal.entity.tables.ItemSkill;
 import com.jiubredeemer.itemstorage.dal.entity.tables.ItemStats;
 import com.jiubredeemer.itemstorage.dal.entity.tables.ItemTag;
@@ -15,6 +18,7 @@ import com.jiubredeemer.itemstorage.dal.entity.tables.Items;
 import com.jiubredeemer.itemstorage.dal.entity.tables.ItemsUser;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Items_24;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Money;
+import com.jiubredeemer.itemstorage.dal.entity.tables.RoomBundle;
 
 
 /**
@@ -22,6 +26,11 @@ import com.jiubredeemer.itemstorage.dal.entity.tables.Money;
  */
 @SuppressWarnings({ "all", "unchecked", "rawtypes", "this-escape" })
 public class Tables {
+
+    /**
+     * The table <code>itemstorage.bundle_purchase</code>.
+     */
+    public static final BundlePurchase BUNDLE_PURCHASE = BundlePurchase.BUNDLE_PURCHASE;
 
     /**
      * The table <code>itemstorage.inventory</code>.
@@ -37,6 +46,16 @@ public class Tables {
      * The table <code>itemstorage.inventory_item_skill</code>.
      */
     public static final InventoryItemSkill INVENTORY_ITEM_SKILL = InventoryItemSkill.INVENTORY_ITEM_SKILL;
+
+    /**
+     * The table <code>itemstorage.item_bundle</code>.
+     */
+    public static final ItemBundle ITEM_BUNDLE = ItemBundle.ITEM_BUNDLE;
+
+    /**
+     * The table <code>itemstorage.item_bundled</code>.
+     */
+    public static final ItemBundled ITEM_BUNDLED = ItemBundled.ITEM_BUNDLED;
 
     /**
      * The table <code>itemstorage.item_skill</code>.
@@ -77,4 +96,9 @@ public class Tables {
      * The table <code>itemstorage.money</code>.
      */
     public static final Money MONEY = Money.MONEY;
+
+    /**
+     * The table <code>itemstorage.room_bundle</code>.
+     */
+    public static final RoomBundle ROOM_BUNDLE = RoomBundle.ROOM_BUNDLE;
 }

@@ -4,9 +4,12 @@
 package com.jiubredeemer.itemstorage.dal.entity;
 
 
+import com.jiubredeemer.itemstorage.dal.entity.tables.BundlePurchase;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Inventory;
 import com.jiubredeemer.itemstorage.dal.entity.tables.InventoryItem;
 import com.jiubredeemer.itemstorage.dal.entity.tables.InventoryItemSkill;
+import com.jiubredeemer.itemstorage.dal.entity.tables.ItemBundle;
+import com.jiubredeemer.itemstorage.dal.entity.tables.ItemBundled;
 import com.jiubredeemer.itemstorage.dal.entity.tables.ItemSkill;
 import com.jiubredeemer.itemstorage.dal.entity.tables.ItemStats;
 import com.jiubredeemer.itemstorage.dal.entity.tables.ItemTag;
@@ -15,6 +18,7 @@ import com.jiubredeemer.itemstorage.dal.entity.tables.Items;
 import com.jiubredeemer.itemstorage.dal.entity.tables.ItemsUser;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Items_24;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Money;
+import com.jiubredeemer.itemstorage.dal.entity.tables.RoomBundle;
 
 import java.util.Arrays;
 import java.util.List;
@@ -38,6 +42,11 @@ public class Itemstorage extends SchemaImpl {
     public static final Itemstorage ITEMSTORAGE = new Itemstorage();
 
     /**
+     * The table <code>itemstorage.bundle_purchase</code>.
+     */
+    public final BundlePurchase BUNDLE_PURCHASE = BundlePurchase.BUNDLE_PURCHASE;
+
+    /**
      * The table <code>itemstorage.inventory</code>.
      */
     public final Inventory INVENTORY = Inventory.INVENTORY;
@@ -51,6 +60,16 @@ public class Itemstorage extends SchemaImpl {
      * The table <code>itemstorage.inventory_item_skill</code>.
      */
     public final InventoryItemSkill INVENTORY_ITEM_SKILL = InventoryItemSkill.INVENTORY_ITEM_SKILL;
+
+    /**
+     * The table <code>itemstorage.item_bundle</code>.
+     */
+    public final ItemBundle ITEM_BUNDLE = ItemBundle.ITEM_BUNDLE;
+
+    /**
+     * The table <code>itemstorage.item_bundled</code>.
+     */
+    public final ItemBundled ITEM_BUNDLED = ItemBundled.ITEM_BUNDLED;
 
     /**
      * The table <code>itemstorage.item_skill</code>.
@@ -93,6 +112,11 @@ public class Itemstorage extends SchemaImpl {
     public final Money MONEY = Money.MONEY;
 
     /**
+     * The table <code>itemstorage.room_bundle</code>.
+     */
+    public final RoomBundle ROOM_BUNDLE = RoomBundle.ROOM_BUNDLE;
+
+    /**
      * No further instances allowed
      */
     private Itemstorage() {
@@ -108,9 +132,12 @@ public class Itemstorage extends SchemaImpl {
     @Override
     public final List<Table<?>> getTables() {
         return Arrays.asList(
+            BundlePurchase.BUNDLE_PURCHASE,
             Inventory.INVENTORY,
             InventoryItem.INVENTORY_ITEM,
             InventoryItemSkill.INVENTORY_ITEM_SKILL,
+            ItemBundle.ITEM_BUNDLE,
+            ItemBundled.ITEM_BUNDLED,
             ItemSkill.ITEM_SKILL,
             ItemStats.ITEM_STATS,
             ItemTag.ITEM_TAG,
@@ -118,7 +145,8 @@ public class Itemstorage extends SchemaImpl {
             Items.ITEMS,
             Items_24.ITEMS_24,
             ItemsUser.ITEMS_USER,
-            Money.MONEY
+            Money.MONEY,
+            RoomBundle.ROOM_BUNDLE
         );
     }
 }

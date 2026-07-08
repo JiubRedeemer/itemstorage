@@ -4,9 +4,12 @@
 package com.jiubredeemer.itemstorage.dal.entity;
 
 
+import com.jiubredeemer.itemstorage.dal.entity.tables.BundlePurchase;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Inventory;
 import com.jiubredeemer.itemstorage.dal.entity.tables.InventoryItem;
 import com.jiubredeemer.itemstorage.dal.entity.tables.InventoryItemSkill;
+import com.jiubredeemer.itemstorage.dal.entity.tables.ItemBundle;
+import com.jiubredeemer.itemstorage.dal.entity.tables.ItemBundled;
 import com.jiubredeemer.itemstorage.dal.entity.tables.ItemSkill;
 import com.jiubredeemer.itemstorage.dal.entity.tables.ItemStats;
 import com.jiubredeemer.itemstorage.dal.entity.tables.ItemTag;
@@ -15,9 +18,13 @@ import com.jiubredeemer.itemstorage.dal.entity.tables.Items;
 import com.jiubredeemer.itemstorage.dal.entity.tables.ItemsUser;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Items_24;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Money;
+import com.jiubredeemer.itemstorage.dal.entity.tables.RoomBundle;
+import com.jiubredeemer.itemstorage.dal.entity.tables.records.BundlePurchaseRecord;
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.InventoryItemRecord;
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.InventoryItemSkillRecord;
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.InventoryRecord;
+import com.jiubredeemer.itemstorage.dal.entity.tables.records.ItemBundleRecord;
+import com.jiubredeemer.itemstorage.dal.entity.tables.records.ItemBundledRecord;
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.ItemSkillRecord;
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.ItemStatsRecord;
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.ItemTagRecord;
@@ -26,6 +33,7 @@ import com.jiubredeemer.itemstorage.dal.entity.tables.records.ItemsRecord;
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.ItemsUserRecord;
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.Items_24Record;
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.MoneyRecord;
+import com.jiubredeemer.itemstorage.dal.entity.tables.records.RoomBundleRecord;
 
 import org.jooq.ForeignKey;
 import org.jooq.TableField;
@@ -45,9 +53,12 @@ public class Keys {
     // UNIQUE and PRIMARY KEY definitions
     // -------------------------------------------------------------------------
 
+    public static final UniqueKey<BundlePurchaseRecord> BUNDLE_PURCHASE_PKEY = Internal.createUniqueKey(BundlePurchase.BUNDLE_PURCHASE, DSL.name("bundle_purchase_pkey"), new TableField[] { BundlePurchase.BUNDLE_PURCHASE.USER_ID, BundlePurchase.BUNDLE_PURCHASE.ITEM_BUNDLE_ID }, true);
     public static final UniqueKey<InventoryRecord> INVENTORY_PKEY = Internal.createUniqueKey(Inventory.INVENTORY, DSL.name("inventory_pkey"), new TableField[] { Inventory.INVENTORY.ID }, true);
     public static final UniqueKey<InventoryItemRecord> INVENTORY_ITEM_PKEY = Internal.createUniqueKey(InventoryItem.INVENTORY_ITEM, DSL.name("inventory_item_pkey"), new TableField[] { InventoryItem.INVENTORY_ITEM.ID }, true);
     public static final UniqueKey<InventoryItemSkillRecord> INVENTORY_ITEM_SKILL_PKEY = Internal.createUniqueKey(InventoryItemSkill.INVENTORY_ITEM_SKILL, DSL.name("inventory_item_skill_pkey"), new TableField[] { InventoryItemSkill.INVENTORY_ITEM_SKILL.ID }, true);
+    public static final UniqueKey<ItemBundleRecord> ITEM_BUNDLE_PKEY = Internal.createUniqueKey(ItemBundle.ITEM_BUNDLE, DSL.name("item_bundle_pkey"), new TableField[] { ItemBundle.ITEM_BUNDLE.ID }, true);
+    public static final UniqueKey<ItemBundledRecord> ITEM_BUNDLED_PKEY = Internal.createUniqueKey(ItemBundled.ITEM_BUNDLED, DSL.name("item_bundled_pkey"), new TableField[] { ItemBundled.ITEM_BUNDLED.ID }, true);
     public static final UniqueKey<ItemSkillRecord> ITEM_SKILL_PKEY = Internal.createUniqueKey(ItemSkill.ITEM_SKILL, DSL.name("item_skill_pkey"), new TableField[] { ItemSkill.ITEM_SKILL.ID }, true);
     public static final UniqueKey<ItemStatsRecord> ITEM_STATS_PK = Internal.createUniqueKey(ItemStats.ITEM_STATS, DSL.name("item_stats_pk"), new TableField[] { ItemStats.ITEM_STATS.ID }, true);
     public static final UniqueKey<ItemTagRecord> PK_ITEM_TAG = Internal.createUniqueKey(ItemTag.ITEM_TAG, DSL.name("pk_item_tag"), new TableField[] { ItemTag.ITEM_TAG.ID }, true);
@@ -57,15 +68,19 @@ public class Keys {
     public static final UniqueKey<Items_24Record> ITEMS_24_PKEY = Internal.createUniqueKey(Items_24.ITEMS_24, DSL.name("items_24_pkey"), new TableField[] { Items_24.ITEMS_24.ID }, true);
     public static final UniqueKey<ItemsUserRecord> ITEMS_USER_PKEY = Internal.createUniqueKey(ItemsUser.ITEMS_USER, DSL.name("items_user_pkey"), new TableField[] { ItemsUser.ITEMS_USER.ID }, true);
     public static final UniqueKey<MoneyRecord> MONEY_PKEY = Internal.createUniqueKey(Money.MONEY, DSL.name("money_pkey"), new TableField[] { Money.MONEY.ID }, true);
+    public static final UniqueKey<RoomBundleRecord> ROOM_BUNDLE_PKEY = Internal.createUniqueKey(RoomBundle.ROOM_BUNDLE, DSL.name("room_bundle_pkey"), new TableField[] { RoomBundle.ROOM_BUNDLE.ID }, true);
 
     // -------------------------------------------------------------------------
     // FOREIGN KEY definitions
     // -------------------------------------------------------------------------
 
+    public static final ForeignKey<BundlePurchaseRecord, ItemBundleRecord> BUNDLE_PURCHASE__FK_BUNDLE_PURCHASE_BUNDLE = Internal.createForeignKey(BundlePurchase.BUNDLE_PURCHASE, DSL.name("fk_bundle_purchase_bundle"), new TableField[] { BundlePurchase.BUNDLE_PURCHASE.ITEM_BUNDLE_ID }, Keys.ITEM_BUNDLE_PKEY, new TableField[] { ItemBundle.ITEM_BUNDLE.ID }, true);
     public static final ForeignKey<InventoryItemRecord, InventoryRecord> INVENTORY_ITEM__FKINVENTORY_155964 = Internal.createForeignKey(InventoryItem.INVENTORY_ITEM, DSL.name("fkinventory_155964"), new TableField[] { InventoryItem.INVENTORY_ITEM.INVENTORY_ID }, Keys.INVENTORY_PKEY, new TableField[] { Inventory.INVENTORY.ID }, true);
     public static final ForeignKey<InventoryItemSkillRecord, InventoryItemRecord> INVENTORY_ITEM_SKILL__FKINVENTORY_170633 = Internal.createForeignKey(InventoryItemSkill.INVENTORY_ITEM_SKILL, DSL.name("fkinventory_170633"), new TableField[] { InventoryItemSkill.INVENTORY_ITEM_SKILL.INVENTORY_ITEM_ID }, Keys.INVENTORY_ITEM_PKEY, new TableField[] { InventoryItem.INVENTORY_ITEM.ID }, true);
     public static final ForeignKey<InventoryItemSkillRecord, ItemSkillRecord> INVENTORY_ITEM_SKILL__FKINVENTORY_355492 = Internal.createForeignKey(InventoryItemSkill.INVENTORY_ITEM_SKILL, DSL.name("fkinventory_355492"), new TableField[] { InventoryItemSkill.INVENTORY_ITEM_SKILL.ITEM_SKILL_ID }, Keys.ITEM_SKILL_PKEY, new TableField[] { ItemSkill.ITEM_SKILL.ID }, true);
+    public static final ForeignKey<ItemBundledRecord, ItemBundleRecord> ITEM_BUNDLED__FKITEM_BUNDL939553 = Internal.createForeignKey(ItemBundled.ITEM_BUNDLED, DSL.name("fkitem_bundl939553"), new TableField[] { ItemBundled.ITEM_BUNDLED.ITEM_BUNDLE_ID }, Keys.ITEM_BUNDLE_PKEY, new TableField[] { ItemBundle.ITEM_BUNDLE.ID }, true);
     public static final ForeignKey<ItemStatsRecord, ItemsRecord> ITEM_STATS__ITEM_STATS_ITEMS_FK = Internal.createForeignKey(ItemStats.ITEM_STATS, DSL.name("item_stats_items_fk"), new TableField[] { ItemStats.ITEM_STATS.ITEM_ID }, Keys.ITEMS_PKEY, new TableField[] { Items.ITEMS.ID }, true);
     public static final ForeignKey<ItemsUserRecord, ItemsUserRecord> ITEMS_USER__ITEMS_USER_UNIDENTIFIED_ITEM_ID_FKEY = Internal.createForeignKey(ItemsUser.ITEMS_USER, DSL.name("items_user_unidentified_item_id_fkey"), new TableField[] { ItemsUser.ITEMS_USER.UNIDENTIFIED_ITEM_ID }, Keys.ITEMS_USER_PKEY, new TableField[] { ItemsUser.ITEMS_USER.ID }, true);
     public static final ForeignKey<MoneyRecord, InventoryRecord> MONEY__FKMONEY686639 = Internal.createForeignKey(Money.MONEY, DSL.name("fkmoney686639"), new TableField[] { Money.MONEY.INVENTORY_ID }, Keys.INVENTORY_PKEY, new TableField[] { Inventory.INVENTORY.ID }, true);
+    public static final ForeignKey<RoomBundleRecord, ItemBundleRecord> ROOM_BUNDLE__FKROOM_BUNDL902626 = Internal.createForeignKey(RoomBundle.ROOM_BUNDLE, DSL.name("fkroom_bundl902626"), new TableField[] { RoomBundle.ROOM_BUNDLE.ITEM_BUNDLE_ID }, Keys.ITEM_BUNDLE_PKEY, new TableField[] { ItemBundle.ITEM_BUNDLE.ID }, true);
 }

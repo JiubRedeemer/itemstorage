@@ -35,4 +35,5 @@ public class ItemDto {
     private String creator;
     private Boolean hiddenStats;
     private UUID unidentifiedItemId;
+    private UUID itemBundleId;
 }
