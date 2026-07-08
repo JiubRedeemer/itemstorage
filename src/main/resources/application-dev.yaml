@@ -1,0 +1,6 @@
+spring:
+  datasource:
+    password: pd
+    url: jdbc:postgresql://80.93.62.19:5432/itemstorage
+    username: pd
+    driver-class-name: org.postgresql.Driver

@@ -2,6 +2,7 @@ package com.jiubredeemer.itemstorage.dal.repository.inventory;
 
 import com.jiubredeemer.itemstorage.dal.configuration.LicenseMode;
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.ItemSkillRecord;
+import com.jiubredeemer.itemstorage.domain.model.bundle.ItemBundleDto;
 import com.jiubredeemer.itemstorage.domain.model.inventory.InventoryItemDto;
 import com.jiubredeemer.itemstorage.domain.model.item.ItemDto;
 import com.jiubredeemer.itemstorage.domain.model.item.ItemSkillDto;
@@ -63,14 +64,15 @@ public class ItemRepository {
     }
 
     public List<ItemDto> findByIds(List<UUID> ids) {
-        List<ItemDto> itemDtos = dsl.selectFrom(ITEMS)
-                .where(ITEMS.ID.in(ids))
-                .and(ITEMS.CREATOR_ID.isNull())
-                .fetchInto(ItemDto.class);
-        itemDtos.addAll(dsl.selectFrom(ITEMS_24)
-                .where(ITEMS_24.ID.in(ids))
-                .and(ITEMS_24.CREATOR_ID.isNull())
-                .fetchInto(ItemDto.class));
+        List<ItemDto> itemDtos = new ArrayList<>();
+//        List<ItemDto> itemDtos = dsl.selectFrom(ITEMS)
+//                .where(ITEMS.ID.in(ids))
+//                .and(ITEMS.CREATOR_ID.isNull())
+//                .fetchInto(ItemDto.class);
+//        itemDtos.addAll(dsl.selectFrom(ITEMS_24)
+//                .where(ITEMS_24.ID.in(ids))
+//                .and(ITEMS_24.CREATOR_ID.isNull())
+//                .fetchInto(ItemDto.class));
         itemDtos.addAll(dsl.selectFrom(ITEMS_USER)
                 .where(ITEMS_USER.ID.in(ids))
                 .fetchInto(ItemDto.class));
@@ -78,6 +80,7 @@ public class ItemRepository {
                 .where(ITEM_BUNDLED.ID.in(ids))
                 .fetchInto(ItemDto.class));
         enrichSkills(itemDtos);
+        enrichBundles(itemDtos);
         return itemDtos;
     }
 
@@ -404,6 +407,11 @@ public class ItemRepository {
                 .where(ITEM_SKILL.ITEM_ID.in(itemIds))
                 .fetchInto(ItemSkillDto.class);
     }
+    public List<ItemBundleDto> findBundlesForItems(List<UUID> bundlesIds) {
+        return dsl.selectFrom(ITEM_BUNDLE)
+                .where(ITEM_BUNDLE.ID.in(bundlesIds))
+                .fetchInto(ItemBundleDto.class);
+    }
 
     public ItemSkillDto findSkillById(UUID id) {
         return dsl.selectFrom(ITEM_SKILL)
@@ -465,6 +473,14 @@ public class ItemRepository {
                 .filter(skillDto -> skillDto.getItemId().equals(itemDto.getId()))
                 .collect(Collectors.toList())));
         enrichTags(itemDtos);
+    }
+
+    private void enrichBundles(List<ItemDto> itemDtos) {
+        List<ItemBundleDto> bundles = findBundlesForItems(itemDtos.stream().map(ItemDto::getItemBundleId).collect(Collectors.toList()));
+        itemDtos.forEach(itemDto -> itemDto.setItemBundleName(bundles
+                .stream()
+                .filter(bundleDto -> bundleDto.getId().equals(itemDto.getItemBundleId()))
+                .findAny().orElseGet(ItemBundleDto::new).getName()));
     }
 
     private void enrichTags(List<ItemDto> itemDtos) {
