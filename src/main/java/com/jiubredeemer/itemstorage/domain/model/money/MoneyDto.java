@@ -11,4 +11,6 @@ public class MoneyDto {
     private Long goldenCount;
     private Long silverCount;
     private Long copperCount;
+    private Long electrumCount;
+    private Long platinumCount;
 }

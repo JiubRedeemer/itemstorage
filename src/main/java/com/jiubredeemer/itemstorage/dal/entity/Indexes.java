@@ -15,6 +15,8 @@ import com.jiubredeemer.itemstorage.dal.entity.tables.ItemsUser;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Items_24;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Money;
 import com.jiubredeemer.itemstorage.dal.entity.tables.RoomBundle;
+import com.jiubredeemer.itemstorage.dal.entity.tables.Shop;
+import com.jiubredeemer.itemstorage.dal.entity.tables.ShopItem;
 
 import org.jooq.Index;
 import org.jooq.OrderField;
@@ -44,4 +46,6 @@ public class Indexes {
     public static final Index ITEMS_USER_TYPE_IDX = Internal.createIndex(DSL.name("items_user_type_idx"), ItemsUser.ITEMS_USER, new OrderField[] { ItemsUser.ITEMS_USER.TYPE }, false);
     public static final Index MONEY_INVENTORY_ID = Internal.createIndex(DSL.name("money_inventory_id"), Money.MONEY, new OrderField[] { Money.MONEY.INVENTORY_ID }, false);
     public static final Index ROOM_BUNDLE_ROOM_ID = Internal.createIndex(DSL.name("room_bundle_room_id"), RoomBundle.ROOM_BUNDLE, new OrderField[] { RoomBundle.ROOM_BUNDLE.ROOM_ID }, false);
+    public static final Index SHOP_ITEM_SHOP_ID_IDX = Internal.createIndex(DSL.name("shop_item_shop_id_idx"), ShopItem.SHOP_ITEM, new OrderField[] { ShopItem.SHOP_ITEM.SHOP_ID }, false);
+    public static final Index SHOP_ROOM_ID_IDX = Internal.createIndex(DSL.name("shop_room_id_idx"), Shop.SHOP, new OrderField[] { Shop.SHOP.ROOM_ID }, false);
 }

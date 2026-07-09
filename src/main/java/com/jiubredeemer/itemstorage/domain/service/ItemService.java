@@ -39,8 +39,9 @@ public class ItemService {
                                                            String rarity,
                                                            List<String> tags,
                                                            Boolean customization,
-                                                           Boolean hasSkills) {
-        return itemRepository.searchByNameRoomAndCommunityItems(searchQuery, roomId, userId, lastSeenCreatedAt, lastSeenId, limit, ruleType, type, subtype, rarity, tags, customization, hasSkills);
+                                                           Boolean hasSkills,
+                                                           UUID itemBundleId) {
+        return itemRepository.searchByNameRoomAndCommunityItems(searchQuery, roomId, userId, lastSeenCreatedAt, lastSeenId, limit, ruleType, type, subtype, rarity, tags, customization, hasSkills, itemBundleId);
     }
 
     public List<ItemDto> searchByNameRoomAndCommunityItemsOwnedUsers(String searchQuery,

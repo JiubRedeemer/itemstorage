@@ -19,6 +19,8 @@ import com.jiubredeemer.itemstorage.dal.entity.tables.ItemsUser;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Items_24;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Money;
 import com.jiubredeemer.itemstorage.dal.entity.tables.RoomBundle;
+import com.jiubredeemer.itemstorage.dal.entity.tables.Shop;
+import com.jiubredeemer.itemstorage.dal.entity.tables.ShopItem;
 
 
 /**
@@ -101,4 +103,14 @@ public class Tables {
      * The table <code>itemstorage.room_bundle</code>.
      */
     public static final RoomBundle ROOM_BUNDLE = RoomBundle.ROOM_BUNDLE;
+
+    /**
+     * The table <code>itemstorage.shop</code>.
+     */
+    public static final Shop SHOP = Shop.SHOP;
+
+    /**
+     * The table <code>itemstorage.shop_item</code>.
+     */
+    public static final ShopItem SHOP_ITEM = ShopItem.SHOP_ITEM;
 }

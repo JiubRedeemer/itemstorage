@@ -84,6 +84,16 @@ public class Money extends TableImpl<MoneyRecord> {
      */
     public final TableField<MoneyRecord, Long> COPPER_COUNT = createField(DSL.name("copper_count"), SQLDataType.BIGINT.nullable(false).defaultValue(DSL.field(DSL.raw("0"), SQLDataType.BIGINT)), this, "");
 
+    /**
+     * The column <code>itemstorage.money.electrum_count</code>.
+     */
+    public final TableField<MoneyRecord, Long> ELECTRUM_COUNT = createField(DSL.name("electrum_count"), SQLDataType.BIGINT.nullable(false).defaultValue(DSL.field(DSL.raw("0"), SQLDataType.BIGINT)), this, "");
+
+    /**
+     * The column <code>itemstorage.money.platinum_count</code>.
+     */
+    public final TableField<MoneyRecord, Long> PLATINUM_COUNT = createField(DSL.name("platinum_count"), SQLDataType.BIGINT.nullable(false).defaultValue(DSL.field(DSL.raw("0"), SQLDataType.BIGINT)), this, "");
+
     private Money(Name alias, Table<MoneyRecord> aliased) {
         this(alias, aliased, (Field<?>[]) null, null);
     }

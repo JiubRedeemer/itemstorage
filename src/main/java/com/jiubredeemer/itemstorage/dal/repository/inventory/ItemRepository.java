@@ -99,7 +99,8 @@ public class ItemRepository {
             String rarity,
             List<String> tags,
             Boolean customization,
-            Boolean hasSkills) {
+            Boolean hasSkills,
+            UUID itemBundleId) {
         Table<?> rulesItemsTable = getRulesItemsTable(ruleType);
         String rulesItemsTableName = rulesItemsTable.getName();
         var baseItemsCondition = DSL.field(rulesItemsTableName + ".creator_id").isNull();
@@ -211,6 +212,13 @@ public class ItemRepository {
             }
         }
 
+        // Фильтрация по набору (бандлу): предметы из наборов лежат только в item_bundled,
+        // поэтому обычные предметы комнаты/базы при выбранном наборе исключаются полностью.
+        if (itemBundleId != null) {
+            baseItemsCondition = baseItemsCondition.and("1=0");
+            userItemsCondition = userItemsCondition.and("1=0");
+        }
+
         // Предметы из бандлов, включённых для этой комнаты (room_bundle -> item_bundled)
         var bundledItemsCondition = DSL.condition("1=1");
         if (searchQuery != null && !searchQuery.isBlank()) {
@@ -228,6 +236,9 @@ public class ItemRepository {
             );
         } else {
             bundledItemsCondition = bundledItemsCondition.and(DSL.condition("1=0"));
+        }
+        if (itemBundleId != null) {
+            bundledItemsCondition = bundledItemsCondition.and(ITEM_BUNDLED.ITEM_BUNDLE_ID.eq(itemBundleId));
         }
         if (lastSeenCreatedAt != null && lastSeenId != null) {
             bundledItemsCondition = bundledItemsCondition.and(

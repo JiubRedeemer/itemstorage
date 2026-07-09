@@ -39,7 +39,8 @@ public class ItemController {
                 searchItemParams.getRarity(),
                 searchItemParams.getTags(),
                 searchItemParams.getCustomization(),
-                searchItemParams.getHasSkills());
+                searchItemParams.getHasSkills(),
+                searchItemParams.getItemBundleId());
     }
 
     @PostMapping("/search/owned")

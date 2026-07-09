@@ -19,6 +19,8 @@ import com.jiubredeemer.itemstorage.dal.entity.tables.ItemsUser;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Items_24;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Money;
 import com.jiubredeemer.itemstorage.dal.entity.tables.RoomBundle;
+import com.jiubredeemer.itemstorage.dal.entity.tables.Shop;
+import com.jiubredeemer.itemstorage.dal.entity.tables.ShopItem;
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.BundlePurchaseRecord;
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.InventoryItemRecord;
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.InventoryItemSkillRecord;
@@ -34,6 +36,8 @@ import com.jiubredeemer.itemstorage.dal.entity.tables.records.ItemsUserRecord;
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.Items_24Record;
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.MoneyRecord;
 import com.jiubredeemer.itemstorage.dal.entity.tables.records.RoomBundleRecord;
+import com.jiubredeemer.itemstorage.dal.entity.tables.records.ShopItemRecord;
+import com.jiubredeemer.itemstorage.dal.entity.tables.records.ShopRecord;
 
 import org.jooq.ForeignKey;
 import org.jooq.TableField;
@@ -69,6 +73,8 @@ public class Keys {
     public static final UniqueKey<ItemsUserRecord> ITEMS_USER_PKEY = Internal.createUniqueKey(ItemsUser.ITEMS_USER, DSL.name("items_user_pkey"), new TableField[] { ItemsUser.ITEMS_USER.ID }, true);
     public static final UniqueKey<MoneyRecord> MONEY_PKEY = Internal.createUniqueKey(Money.MONEY, DSL.name("money_pkey"), new TableField[] { Money.MONEY.ID }, true);
     public static final UniqueKey<RoomBundleRecord> ROOM_BUNDLE_PKEY = Internal.createUniqueKey(RoomBundle.ROOM_BUNDLE, DSL.name("room_bundle_pkey"), new TableField[] { RoomBundle.ROOM_BUNDLE.ID }, true);
+    public static final UniqueKey<ShopRecord> SHOP_PKEY = Internal.createUniqueKey(Shop.SHOP, DSL.name("shop_pkey"), new TableField[] { Shop.SHOP.ID }, true);
+    public static final UniqueKey<ShopItemRecord> SHOP_ITEM_PKEY = Internal.createUniqueKey(ShopItem.SHOP_ITEM, DSL.name("shop_item_pkey"), new TableField[] { ShopItem.SHOP_ITEM.ID }, true);
 
     // -------------------------------------------------------------------------
     // FOREIGN KEY definitions
@@ -83,4 +89,5 @@ public class Keys {
     public static final ForeignKey<ItemsUserRecord, ItemsUserRecord> ITEMS_USER__ITEMS_USER_UNIDENTIFIED_ITEM_ID_FKEY = Internal.createForeignKey(ItemsUser.ITEMS_USER, DSL.name("items_user_unidentified_item_id_fkey"), new TableField[] { ItemsUser.ITEMS_USER.UNIDENTIFIED_ITEM_ID }, Keys.ITEMS_USER_PKEY, new TableField[] { ItemsUser.ITEMS_USER.ID }, true);
     public static final ForeignKey<MoneyRecord, InventoryRecord> MONEY__FKMONEY686639 = Internal.createForeignKey(Money.MONEY, DSL.name("fkmoney686639"), new TableField[] { Money.MONEY.INVENTORY_ID }, Keys.INVENTORY_PKEY, new TableField[] { Inventory.INVENTORY.ID }, true);
     public static final ForeignKey<RoomBundleRecord, ItemBundleRecord> ROOM_BUNDLE__FKROOM_BUNDL902626 = Internal.createForeignKey(RoomBundle.ROOM_BUNDLE, DSL.name("fkroom_bundl902626"), new TableField[] { RoomBundle.ROOM_BUNDLE.ITEM_BUNDLE_ID }, Keys.ITEM_BUNDLE_PKEY, new TableField[] { ItemBundle.ITEM_BUNDLE.ID }, true);
+    public static final ForeignKey<ShopItemRecord, ShopRecord> SHOP_ITEM__FK_SHOP_ITEM_SHOP = Internal.createForeignKey(ShopItem.SHOP_ITEM, DSL.name("fk_shop_item_shop"), new TableField[] { ShopItem.SHOP_ITEM.SHOP_ID }, Keys.SHOP_PKEY, new TableField[] { Shop.SHOP.ID }, true);
 }

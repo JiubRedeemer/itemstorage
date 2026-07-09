@@ -25,4 +25,5 @@ public class SearchItemParams {
     private List<String> tags;
     private Boolean customization;
     private Boolean hasSkills;
+    private UUID itemBundleId;
 }

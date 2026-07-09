@@ -19,6 +19,8 @@ import com.jiubredeemer.itemstorage.dal.entity.tables.ItemsUser;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Items_24;
 import com.jiubredeemer.itemstorage.dal.entity.tables.Money;
 import com.jiubredeemer.itemstorage.dal.entity.tables.RoomBundle;
+import com.jiubredeemer.itemstorage.dal.entity.tables.Shop;
+import com.jiubredeemer.itemstorage.dal.entity.tables.ShopItem;
 
 import java.util.Arrays;
 import java.util.List;
@@ -117,6 +119,16 @@ public class Itemstorage extends SchemaImpl {
     public final RoomBundle ROOM_BUNDLE = RoomBundle.ROOM_BUNDLE;
 
     /**
+     * The table <code>itemstorage.shop</code>.
+     */
+    public final Shop SHOP = Shop.SHOP;
+
+    /**
+     * The table <code>itemstorage.shop_item</code>.
+     */
+    public final ShopItem SHOP_ITEM = ShopItem.SHOP_ITEM;
+
+    /**
      * No further instances allowed
      */
     private Itemstorage() {
@@ -146,7 +158,9 @@ public class Itemstorage extends SchemaImpl {
             Items_24.ITEMS_24,
             ItemsUser.ITEMS_USER,
             Money.MONEY,
-            RoomBundle.ROOM_BUNDLE
+            RoomBundle.ROOM_BUNDLE,
+            Shop.SHOP,
+            ShopItem.SHOP_ITEM
         );
     }
 }

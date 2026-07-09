@@ -90,6 +90,34 @@ public class MoneyRecord extends UpdatableRecordImpl<MoneyRecord> {
         return (Long) get(4);
     }
 
+    /**
+     * Setter for <code>itemstorage.money.electrum_count</code>.
+     */
+    public void setElectrumCount(Long value) {
+        set(5, value);
+    }
+
+    /**
+     * Getter for <code>itemstorage.money.electrum_count</code>.
+     */
+    public Long getElectrumCount() {
+        return (Long) get(5);
+    }
+
+    /**
+     * Setter for <code>itemstorage.money.platinum_count</code>.
+     */
+    public void setPlatinumCount(Long value) {
+        set(6, value);
+    }
+
+    /**
+     * Getter for <code>itemstorage.money.platinum_count</code>.
+     */
+    public Long getPlatinumCount() {
+        return (Long) get(6);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -113,7 +141,7 @@ public class MoneyRecord extends UpdatableRecordImpl<MoneyRecord> {
     /**
      * Create a detached, initialised MoneyRecord
      */
-    public MoneyRecord(UUID id, UUID inventoryId, Long goldenCount, Long silverCount, Long copperCount) {
+    public MoneyRecord(UUID id, UUID inventoryId, Long goldenCount, Long silverCount, Long copperCount, Long electrumCount, Long platinumCount) {
         super(Money.MONEY);
 
         setId(id);
@@ -121,6 +149,8 @@ public class MoneyRecord extends UpdatableRecordImpl<MoneyRecord> {
         setGoldenCount(goldenCount);
         setSilverCount(silverCount);
         setCopperCount(copperCount);
+        setElectrumCount(electrumCount);
+        setPlatinumCount(platinumCount);
         resetChangedOnNotNull();
     }
 }
