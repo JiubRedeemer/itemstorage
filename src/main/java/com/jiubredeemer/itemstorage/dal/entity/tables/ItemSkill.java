@@ -64,7 +64,7 @@ public class ItemSkill extends TableImpl<ItemSkillRecord> {
     /**
      * The column <code>itemstorage.item_skill.item_id</code>.
      */
-    public final TableField<ItemSkillRecord, UUID> ITEM_ID = createField(DSL.name("item_id"), SQLDataType.UUID.nullable(false), this, "");
+    public final TableField<ItemSkillRecord, UUID> ITEM_ID = createField(DSL.name("item_id"), SQLDataType.UUID, this, "");
 
     /**
      * The column <code>itemstorage.item_skill.name</code>.
